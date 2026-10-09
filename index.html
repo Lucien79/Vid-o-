@@ -122,6 +122,9 @@ input:focus,textarea:focus{outline:none;border-color:var(--acc)}
 .scene-card-body{padding:.7rem}
 .scene-card-body video{width:100%;border-radius:2px;background:#000;display:block}
 .scene-placeholder{width:100%;aspect-ratio:16/9;background:#0a0a12;border-radius:2px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:.7rem;font-family:var(--fm);flex-direction:column;gap:.5rem;text-align:center;padding:.5rem}
+.stopmotion-preview{position:relative;width:100%;background:#000;border-radius:2px;overflow:hidden;cursor:pointer;transition:transform .2s}
+.stopmotion-preview:hover{transform:scale(1.01)}
+.stopmotion-preview img{width:100%;height:100%;object-fit:contain;display:block}
 .scene-download{display:block;margin-top:.5rem;font-size:.72rem;color:var(--acc);text-decoration:none;text-align:center;padding:.4rem;border:1px solid var(--border);border-radius:3px;transition:all .2s}
 .scene-download:hover{background:rgba(229,193,90,.08);border-color:var(--acc)}
 .spinner-mini{width:14px;height:14px;border:2px solid rgba(229,193,90,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
@@ -166,15 +169,8 @@ input:focus,textarea:focus{outline:none;border-color:var(--acc)}
 .debug-entry.api{border-left-color:var(--acc)}
 .debug-entry.response{border-left-color:var(--acc2)}
 .debug-time{color:var(--faint);margin-right:.5rem;font-size:.65rem}
-.debug-cat{
-  color:var(--acc);
-  font-weight:600;
-  margin-right:.4rem;
-  font-size:.65rem;
-}
-.debug-msg{
-  color:#d8d8e0;
-}
+.debug-cat{color:var(--acc);font-weight:600;margin-right:.4rem;font-size:.65rem}
+.debug-msg{color:#d8d8e0}
 .debug-data{margin-top:.3rem;padding:.4rem .5rem;background:#0a0a12;border:1px solid var(--border);border-radius:2px;font-size:.68rem;color:#a8d8b0;max-height:160px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.4}
 .hidden{display:none!important}
 @media(max-width:480px){h1{font-size:1.55rem}.videos-grid{grid-template-columns:1fr}body{padding-bottom:26rem}.debug-panel{height:200px}.status-bar{bottom:210px}.bible-grid{grid-template-columns:repeat(2,1fr)}.location-row{flex-direction:column}}
@@ -184,11 +180,11 @@ input:focus,textarea:focus{outline:none;border-color:var(--acc)}
 
 <header>
 <h1>Cinéma Studio — Actualité Manga</h1>
-<p class="subtitle">Reconstitution manga réaliste inspirée de faits réels</p>
+<p class="subtitle">Reconstitution manga réaliste · stop-motion inspiré de faits réels</p>
 </header>
 
 <div class="banner">
-<strong>Principe :</strong> sélectionnez une actualité, l'application produit une <span class="hl">scène manga humaine, réaliste et contemporaine</span> inspirée de faits vérifiés — pas un journal télévisé, pas de plateau, pas de présentateur. Des <span class="hl">personnages humains fictifs</span> (lycéens, étudiants, travailleurs, familles, citoyens) évoluent dans des <span class="hl">lieux reconnaissables de France</span> (Paris, Bastille, lycées, rues, places, transports). Les faits, dates et chiffres sont vérifiés avant génération. Chaque scène est une <span class="hl">reconstitution manga générée par IA</span>, jamais une image documentaire.
+<strong>Principe :</strong> sélectionnez une actualité, l'application produit une <span class="hl">scène manga humaine, réaliste et contemporaine</span> inspirée de faits vérifiés. Chaque scène est générée en <span class="hl">stop-motion</span> : 12 images clés sont créées puis animées à 8 images/seconde pour créer un effet de mouvement. Des <span class="hl">personnages humains fictifs</span> (lycéens, étudiants, travailleurs, familles, citoyens) évoluent dans des <span class="hl">lieux reconnaissables de France</span>. Les faits, dates et chiffres sont vérifiés avant génération. Chaque scène est une <span class="hl">reconstitution manga générée par IA</span>, jamais une image documentaire.
 </div>
 
 <div class="panel" id="api-panel">
@@ -307,16 +303,25 @@ Ces personnages sont <strong>fictifs et originaux</strong>. Ils ne reproduisent 
 </select>
 </div>
 <div style="margin-bottom:.8rem;">
-<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Durée par scène</label>
-<select id="duration-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
-<option value="121">5 secondes</option>
-<option value="145" selected>6 secondes</option>
-<option value="169">7 secondes</option>
-<option value="241">10 secondes</option>
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Images par scène (stop-motion)</label>
+<select id="stopmotion-frames-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="8">8 images — rapide (~12s/scène)</option>
+<option value="12" selected>12 images — équilibré (~20s/scène)</option>
+<option value="16">16 images — fluide (~28s/scène)</option>
+<option value="20">20 images — très fluide (~35s/scène)</option>
 </select>
 </div>
 <div style="margin-bottom:.8rem;">
-<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Format vidéo</label>
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Vitesse de l'animation (fps)</label>
+<select id="stopmotion-fps-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="4">4 fps — très lent (contemplatif)</option>
+<option value="6">6 fps — lent (poétique)</option>
+<option value="8" selected>8 fps — normal (recommandé)</option>
+<option value="12">12 fps — rapide (nerveux)</option>
+</select>
+</div>
+<div style="margin-bottom:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Format</label>
 <select id="format-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
 <option value="9:16" selected>9:16 — Vertical (mobile)</option>
 <option value="16:9">16:9 — Paysage (cinéma)</option>
@@ -352,7 +357,7 @@ Ces personnages sont <strong>fictifs et originaux</strong>. Ils ne reproduisent 
 
 <div class="section hidden" id="section-videos">
 <div class="section-header" data-toggle="section-videos">
-<span class="section-title">🎞️ Scènes générées <span class="badge" id="videos-count">0</span></span>
+<span class="section-title">🎞️ Scènes générées (stop-motion) <span class="badge" id="videos-count">0</span></span>
 <span class="chevron">▼</span>
 </div>
 <div class="section-body"><div class="section-content">
@@ -376,7 +381,7 @@ Ces personnages sont <strong>fictifs et originaux</strong>. Ils ne reproduisent 
 <label for="voice-toggle">Narration française (voix du navigateur)</label>
 </div>
 </div>
-<div class="hint">Lecture séquentielle avec sous-titres et narration française. Échap ou clic pour quitter. <strong>Chaque scène est une reconstitution manga générée par IA.</strong></div>
+<div class="hint">Lecture séquentielle avec sous-titres et narration française. Échap ou clic pour quitter. <strong>Chaque scène est une reconstitution manga en stop-motion générée par IA.</strong></div>
 </div></div>
 </div>
 
@@ -409,14 +414,15 @@ const API_BASE = 'https://apihub.agnes-ai.com/v1';
 const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
 const MODEL_TEXT = 'agnes-2.5-flash';
 const MODEL_IMAGE = 'agnes-image-2.1-flash';
-const MODEL_VIDEO = 'agnes-video-v2.0';
 const FRAME_RATE = 24;
-const VIDEO_FIRST_POLL_DELAY_SEC = 60;
-const VIDEO_POLL_INTERVALS = [8, 8, 12, 12, 20, 20, 25];
-const VIDEO_MAX_POLL_ATTEMPTS = 100;
 const IMAGE_PARALLEL = 3;
 const IMAGE_INTERVAL_MS = 3400;
-const API_KEYS_STORAGE = 'cinema_studio_manga_keys_v1';
+const IMAGE_INTERVAL_MIN = 3200;
+const IMAGE_INTERVAL_MAX = 12000;
+const IMAGE_INTERVAL_SAFE = 4000;
+const STOPMOTION_FRAMES_DEFAULT = 12;
+const STOPMOTION_FPS_DEFAULT = 8;
+const API_KEYS_STORAGE = 'cinema_studio_manga_keys_v2';
 const DEBUG_MAX = 800;
 const GOOGLE_NEWS_RSS = {
   WORLD: 'https://news.google.com/rss/headlines/section/topic/WORLD?hl=fr&gl=FR&ceid=FR:fr',
@@ -594,12 +600,35 @@ Retourne uniquement : { "valid":true, "problems":[], "character_consistency":"ok
 Vérifie : personnages humains attendus ; visage, carnation, coiffure, vêtements et accessoires ; absence de ressemblance excessive avec une personne réelle ; absence de clonage facial ; absence d'imitation de voix réelle ; lieu conforme à la description ; présence des éléments reconnaissables du lieu ; absence de décor futuriste ; absence de plateau de télévision ; absence de présentateur ou de reporter non demandé ; absence de texte illisible ; absence de fausse citation ou statistique ; cohérence avec la scène précédente ; lisibilité de l'action ; stabilité de la caméra ; absence de déformation importante ; absence de violence inventée ou de blessure non documentée.
 Si un problème est visible, ne valide pas automatiquement la scène.
 `;
+const MOTION_PHRASES = [
+  'very subtle camera drift to the right, subject breathing slowly, hair gently moving',
+  'slight camera push-in, subject turns head slightly, subtle movement of clothing',
+  'camera drifts left, subject shifts weight, hair moves in a breeze',
+  'camera slowly rotates around the subject, gentle body sway, ambient movement',
+  'slow dolly forward, subject leans slightly forward, natural micro-movements',
+  'camera moves slightly upward, subject straightens posture, hair lifting',
+  'camera tracks slowly right, subject gestures with hand, clothing flutter',
+  'subtle parallax movement, background elements shift, subject breathing deeply',
+  'camera pulls back slightly, subject stands still, ambient wind movement',
+  'camera drifts down, subject looks downward slowly, natural head motion',
+  'slow camera rotation, subject turns slightly toward the viewer, hair sway',
+  'gentle camera push, subject settles into final pose, breathing continues',
+  'camera drifts right, subject looks to the side, subtle head turn',
+  'camera pushes in slightly, subject blinks slowly, natural facial motion',
+  'camera drifts left, subject shifts foot position, hair moves in gentle breeze',
+  'camera pans slowly, subject breathes in, chest rising, clothes flutter',
+  'camera rotates gently, subject turns body slightly, ambient dust particles',
+  'slow dolly, subject leans back, natural posture shift, hair sway',
+  'camera rises slightly, subject looks up, subtle jaw movement',
+  'camera settles, subject breathes out, shoulders drop, natural micro-motion'
+];
 
 const state = {
   keyPool: [], newsItems: [], selectedNews: null, factCheck: null,
   referenceImage: null, referenceAnalysis: null,
   selectedCharacters: new Set(), selectedLocation: null, selectedPalette: 'pink-mint',
-  script: null, videos: [], sceneCount: 5, durationFrames: 145,
+  script: null, scenes: [], sceneCount: 5, durationFrames: 145,
+  stopMotionFrames: 12, stopMotionFps: 8,
   format: '9:16', intensity: 'moderate',
   isRunning: false, stopRequested: false,
   isPlayingFilm: false, playRAF: null,
@@ -637,25 +666,27 @@ function revealSection(id){const el=document.getElementById(id);if(!el)return;el
 function buildSystemPrompt(){return SYSTEM_PROMPT+'\n\n'+VISUAL_BIBLE}
 function buildFactCheckPrompt(subjects){const list=subjects.map((s,i)=>'['+(i+1)+'] « '+s.title+' »'+(s.source?' — Source : '+s.source:'')+(s.pubDate?' — Date : '+s.pubDate:'')+(s.link?'\n    Lien : '+s.link:'')).join('\n\n');return['Sujets d\u2019actualité à analyser :','',list,'',FACT_CHECK_PROMPT].join('\n')}
 function buildReferenceAnalysisPrompt(imageContext){return['Contexte fourni par l\u2019utilisateur :',imageContext||'(aucun)','',REFERENCE_ANALYSIS_PROMPT].join('\n')}
-function buildCharacterPrompt(input){return['Crée un personnage humain FICTIF et ORIGINAL pour une scène manga réaliste.','Contraintes :','- Ne reproduis JAMAIS exactement le visage d\u2019une personne réelle.','- Décris uniquement des caractéristiques générales observables :','  âge, carnation, coiffure, morphologie, vêtements, posture, rôle social.','','Contexte fourni : '+JSON.stringify(input),'','Retourne UNIQUEMENT un JSON :','{ "id":"", "name":"", "age":0, "role":"", "appearance":"", "costume":"", "personality":"", "narrative_position":"", "palette":[] }'].join('\n')}
-function buildLocationPrompt(input){return['Décris précisément un lieu réel pour une reconstitution manga.','Contraintes :','- Décris UNIQUEMENT l\u2019architecture, le mobilier urbain, les monuments,','  la signalétique, la géographie et l\u2019organisation de l\u2019espace.','- Aucun élément futuriste ou fantastique.','- Aucune invention.','','Lieu demandé : '+(input.name||input.custom||''),'','Retourne UNIQUEMENT un JSON :','{ "id":"", "name":"", "description":"", "landmarks":[] }'].join('\n')}
 function buildScriptPrompt(input){
   const charactersList=Array.from(state.selectedCharacters).map(id=>CHARACTER_BIBLE[id]).filter(Boolean);
   const location=state.selectedLocation?LOCATION_BIBLE[state.selectedLocation]:null;
   const palette=WA_PALETTES.find(p=>p.id===state.selectedPalette);
   return ['Contexte d\u2019écriture :','','VÉRIFICATION FACTUELLE :',JSON.stringify(input.fact_check||{},null,2),'','ANALYSE DES RÉFÉRENCES VISUELLES :',JSON.stringify(input.reference_analysis||{},null,2),'','PERSONNAGES FICTIFS SÉLECTIONNÉS (à utiliser OBLIGATOIREMENT) :',JSON.stringify(charactersList,null,2),'','LIEU RÉEL :',JSON.stringify(location||{},null,2),'','PALETTE VISUELLE (accents discrets uniquement) :',JSON.stringify(palette||{},null,2),'','PARAMÈTRES :','- Nombre de scènes : '+state.sceneCount,'- Durée par scène : '+Math.round(state.durationFrames/24)+' secondes','- Format : '+state.format,'- Intensité narrative : '+state.intensity,'',SCRIPT_PROMPT,'','FORMAT DE SORTIE (retourne UNIQUEMENT ce JSON) :','{','  "title": "titre de la séquence",','  "logline": "résumé en une phrase",','  "location_name": "'+(location?location.name:'')+'",','  "location_description": "'+(location?location.description.replace(/"/g,'\\"'):'')+'",','  "characters": ['+charactersList.map(c=>'"'+c.id+'"').join(', ')+'],','  "scenes": [','    { "id":"scene-001", "type":"scene_de_rue|lycee|manifestation|assemblee|transport|famille|intervention", "location_name":"", "location_description":"", "characters":[], "fact_summary":"", "reference_summary":"", "fictional_setup":"", "dialogue":"dialogue fictif court (max 12 mots)", "narration":"narration française courte (max 20 mots)", "visual_description":"description visuelle détaillée de la scène", "camera":"description du mouvement de caméra", "duration_seconds":'+Math.round(state.durationFrames/24)+', "continuity_start":"", "continuity_end":"", "sources":[], "disclaimer":"Reconstitution manga fictive inspirée de faits réels et générée par IA" }','    ... exactement '+state.sceneCount+' scènes ...','  ]','}'].join('\n');
 }
-function buildImagePrompt(scene){
+function buildAnchorImagePrompt(scene){
   const characters=(scene.characters||[]).map(id=>CHARACTER_BIBLE[id]).filter(Boolean);
-  return [buildSystemPrompt(),'','PERSONNAGES :',JSON.stringify(characters,null,2),'','LIEU :',scene.location_name||'','','DESCRIPTION DU LIEU :',scene.location_description||'','','SCÈNE :',scene.visual_description||'','','FAITS ASSOCIÉS :',scene.fact_summary||'','','RÉFÉRENCE VISUELLE :',scene.reference_summary||'','','MISE EN SCÈNE :',scene.camera||'Plan moyen réaliste, caméra stable.','','CONTINUITÉ PRÉCÉDENTE :',scene.continuity_start||'Aucune scène précédente.','','CONTINUITÉ SUIVANTE :',scene.continuity_end||'Préparer une transition claire.','','CONSIGNES :','- image verticale 9:16 ;','- apparence humaine crédible ;','- conserver exactement les visages fictifs, coiffures, carnations, morphologies, vêtements et accessoires ;','- représenter fidèlement le lieu demandé ;','- si le lieu est la Bastille, montrer la colonne de Juillet et la place parisienne réelle ;','- ne pas créer de décor futuriste ;','- ne pas créer de plateau de télévision ;','- ne pas ajouter de présentateur ;','- aucune personne réelle identifiable ;','- aucun texte inventé dans l\u2019image ;','- aucune pancarte lisible sans texte fourni et vérifié ;','- zone libre pour les sous-titres ;','- action principale clairement visible ;','- mention de reconstitution uniquement dans les métadonnées ou le montage.'].join('\n');
+  return [buildSystemPrompt(),'','IMAGE D\'ANCRAGE — PREMIÈRE IMAGE DE LA SÉQUENCE STOP-MOTION.','','PERSONNAGES :',JSON.stringify(characters,null,2),'','LIEU :',scene.location_name||'','','DESCRIPTION DU LIEU :',scene.location_description||'','','SCÈNE :',scene.visual_description||'','','FAITS ASSOCIÉS :',scene.fact_summary||'','','RÉFÉRENCE VISUELLE :',scene.reference_summary||'','','MISE EN SCÈNE :',scene.camera||'Plan moyen réaliste, caméra stable.','','CONSIGNES :','- image verticale 9:16 ;','- apparence humaine crédible ;','- visages fictifs, coiffures, carnations, morphologies, vêtements et accessoires précis ;','- représenter fidèlement le lieu demandé ;','- si le lieu est la Bastille, montrer la colonne de Juillet et la place parisienne réelle ;','- aucune personne réelle identifiable ;','- aucun texte inventé dans l\u2019image ;','- zone libre pour les sous-titres ;','- action principale clairement visible.','','Cette image servira de base pour créer une séquence de ' + state.stopMotionFrames + ' images légèrement différentes (stop-motion).'].join('\n');
 }
-function buildVideoPrompt(scene){
+function buildStopMotionPrompt(scene,motionPhrase,frameIdx,totalFrames){
   const characters=(scene.characters||[]).map(id=>CHARACTER_BIBLE[id]).filter(Boolean);
-  return [buildSystemPrompt(),'','PERSONNAGES À CONSERVER :',JSON.stringify(characters,null,2),'','LIEU :',scene.location_name||'','','DESCRIPTION DU LIEU :',scene.location_description||'','','DESCRIPTION DE LA SCÈNE :',scene.visual_description||'','','DIALOGUE À AJOUTER EN VOIX OFF OU SOUS-TITRES :',scene.dialogue||'','','NARRATION :',scene.narration||'','','MOUVEMENT DE CAMÉRA :',scene.camera||'Caméra portée contrôlée, léger mouvement latéral.','','MOUVEMENTS :','- respiration naturelle ;','- clignements naturels ;','- gestes humains simples ;','- mouvements crédibles des vêtements et des cheveux ;','- déplacements réalistes ;','- foule non synchronisée ;','- aucun changement de visage ;','- aucun changement de coiffure ;','- aucun changement de vêtement sans justification ;','- aucune transformation animale ;','- aucun mouvement brusque non documenté.','','CONTINUITÉ :',scene.continuity_start||'','','FIN DU PLAN :',scene.continuity_end||'','','PARAMÈTRES :','- durée cible : '+Math.round(state.durationFrames/24)+' secondes ;','- format vertical 9:16 ;','- manga humain semi-réaliste ;','- environnement contemporain ;','- lieu réel reconnaissable ;','- caméra stable ou portée de manière contrôlée ;','- mouvement fluide ;','- aucun texte généré dans l\u2019image ;','- aucun logo réel ;','- aucune ressemblance exacte avec une personne réelle ;','- aucune imitation de voix réelle ;','- reconstitution fictive générée par IA.','','CONSIGNES NÉGATIVES :','personnage animal, chat, plateau de télévision, présentateur, décor futuriste, science-fiction, architecture inventée, place générique, visage humain réel identifiable, clonage facial, imitation de voix réelle, changement de personnage, changement de visage, changement de coiffure, changement de vêtements, membres supplémentaires, mains déformées, yeux asymétriques, scintillement, caméra instable, texte illisible, logo inventé, fausse citation, fausse statistique, violence graphique, blessure inventée.'].join('\n');
+  const progress=frameIdx/(totalFrames-1);
+  return [buildSystemPrompt(),'','STOP-MOTION FRAME '+(frameIdx+1)+' OF '+totalFrames,'Cette image est la frame '+(frameIdx+1)+' d\'une séquence de '+totalFrames+' images qui formeront une animation de '+(totalFrames/state.stopMotionFps).toFixed(1)+' secondes.','La séquence sera jouée à '+state.stopMotionFps+' images par seconde.','','SCÈNE IDENTIQUE AUX AUTRES FRAMES — GARDER TOUT IDENTIQUE :','- même lieu : '+(scene.location_name||''),'- mêmes personnages : '+characters.map(c=>c.name).join(', '),'- mêmes vêtements, mêmes visages, même composition, même cadrage, même lumière','','PERSONNAGES (FICTIFS — IDENTIQUES DANS TOUTES LES IMAGES) :',JSON.stringify(characters,null,2),'','LIEU (IDENTIQUE DANS TOUTES LES IMAGES) :',scene.location_name||'',scene.location_description||'','','SCÈNE ORIGINALE :',scene.visual_description||'','','MOUVEMENT DE CETTE IMAGE (frame '+(frameIdx+1)+'/'+totalFrames+') :',motionPhrase,'','PROGRESSION DU MOUVEMENT : '+Math.round(progress*100)+'% de la séquence.',progress<0.2?'Début du mouvement — position de départ.':progress<0.8?'Mouvement en cours — position intermédiaire.':'Fin du mouvement — position d\'arrivée.','','CONSIGNES ABSOLUES :','- apparence humaine crédible','- visage, coiffure, carnation, morphologie, vêtements, accessoires IDENTIQUES à l\'image d\'ancrage','- lieu réel reconnaissable','- composition et cadrage IDENTIQUES','- lumière IDENTIQUE','- le mouvement doit être SUBTIL (micro-déplacements, respiration, vent léger)','- un seul mouvement subtil par image','- ne pas changer la scène, seulement un léger décalage','- aucun texte dans l\'image','- aucune personne réelle identifiable','','STYLE :','Manga humain semi-réaliste, cinématographique, grain 35mm discret, palette naturelle légèrement désaturée, lumière naturelle.','','FORMAT : '+(state.format||'9:16')+' vertical, haute qualité.'].join('\n');
 }
-function buildContinuityPrompt(scene){return['Scène à analyser pour la continuité :',JSON.stringify(scene,null,2),'',CONTINUITY_PROMPT].join('\n')}
-function buildVoiceoverPrompt(scene){return['Contenu à transformer en narration française :','','FAITS :',scene.fact_summary||'','','MISE EN SCÈNE :',scene.fictional_setup||'','','NARRATION PRÉCÉDEMMENT GÉNÉRÉE :',scene.narration||'','',VOICEOVER_PROMPT].join('\n')}
-function buildQualityCheckPrompt(scene){return['Scène à contrôler :',JSON.stringify(scene,null,2),'',QUALITY_CHECK_PROMPT].join('\n')}
+function pickMotionPhrase(frameIdx,totalFrames,scene){
+  const progress=frameIdx/(totalFrames-1);
+  const offset=(scene&&scene.type?scene.type.length:0);
+  const idx=Math.floor(progress*(MOTION_PHRASES.length-1)+offset)%MOTION_PHRASES.length;
+  return MOTION_PHRASES[idx];
+}
 
 // ========== PARSER JSON ==========
 function balanceJson(text){let ob=0,ok=0,inString=false,escape=false;for(let i=0;i<text.length;i++){const ch=text[i];if(escape){escape=false;continue}if(ch==='\\'){escape=true;continue}if(ch==='"'){inString=!inString;continue}if(inString)continue;if(ch==='{')ob++;else if(ch==='}')ob--;else if(ch==='[')ok++;else if(ch===']')ok--}let r=text;if(inString)r+='"';while(ok>0){r+=']';ok--}while(ob>0){r+='}';ob--}return r}
@@ -730,6 +761,7 @@ async function apiFetch(url,options,label,maxAttempts){
   }
   throw lastErr||new Error('Tentatives épuisées pour '+label);
 }
+
 // ========== APPELS MODÈLES ==========
 async function callTextModel(systemPrompt,userPrompt,label,maxTokens,temperature){
   const sysMsg=sanitizeForApi(systemPrompt)||'Assistant.';
@@ -762,61 +794,6 @@ async function callImageModel(prompt,size,ratio){
   if(item.url)return item.url;if(item.b64_json)return'data:image/png;base64,'+item.b64_json;
   throw new Error('Format image inconnu');
 }
-async function callVideoModel(prompt,imageUrl,duration){
-  const body={model:MODEL_VIDEO,prompt:sanitizeForApi(prompt),num_frames:duration||state.durationFrames,frame_rate:FRAME_RATE};
-  if(imageUrl)body.image=imageUrl;
-  debugLog('ai','PROMPT VIDÉO','Envoyé ('+body.prompt.length+' chars)',body.prompt.slice(0,700)+'…');
-  const res=await apiFetch(API_BASE+'/videos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},'Video Task',4);
-  const data=await res.json();
-  debugLog('response','VIDÉO CRÉÉE','Réponse POST /videos',data);
-  const compositeId=data.video_id||data.id||data.task_id;
-  if(!compositeId)throw new Error('Pas de video_id retourné');
-  const innerId=decodeCompositeId(compositeId);
-  debugLog('info','VIDÉO ID','composite='+compositeId.slice(0,60)+'… · inner='+(innerId||'—'));
-  return{compositeId,innerId,raw:data};
-}
-function decodeCompositeId(composite){if(!composite||typeof composite!=='string')return null;if(!composite.startsWith('video_'))return null;let b64=composite.slice(6);while(b64.length%4)b64+='=';try{const decoded=atob(b64);const m=decoded.match(/video_id:([^;]+)/);if(m&&m[1])return m[1].trim()}catch(e){}return null}
-function buildIdCandidates(videoIdObj){const ids=[];if(typeof videoIdObj==='string'){ids.push({label:'composite',value:videoIdObj});const inner=decodeCompositeId(videoIdObj);if(inner&&inner!==videoIdObj)ids.push({label:'inner',value:inner})}else if(videoIdObj&&typeof videoIdObj==='object'){if(videoIdObj.compositeId)ids.push({label:'composite',value:videoIdObj.compositeId});if(videoIdObj.innerId)ids.push({label:'inner',value:videoIdObj.innerId});const raw=videoIdObj.raw||{};for(const f of['id','task_id','request_id']){if(raw[f]&&!ids.some(x=>x.value===raw[f]))ids.push({label:'raw.'+f,value:raw[f]})}}const seen=new Set();return ids.filter(x=>{if(seen.has(x.value))return false;seen.add(x.value);return true})}
-const POLL_URL_BUILDERS=[
-  {name:'agnesapi-composite',build:(id)=>POLL_BASE+'?video_id='+encodeURIComponent(id)+'&model_name='+encodeURIComponent(MODEL_VIDEO)},
-  {name:'v1-rest',build:(id)=>API_BASE+'/videos/'+encodeURIComponent(id)},
-  {name:'v1-rest-status',build:(id)=>API_BASE+'/videos/'+encodeURIComponent(id)+'/status'},
-  {name:'v1-rest-model',build:(id)=>API_BASE+'/videos/'+encodeURIComponent(id)+'?model_name='+encodeURIComponent(MODEL_VIDEO)}
-];
-async function pollVideoJob(videoIdObj,onProgress){
-  const candidates=buildIdCandidates(videoIdObj);
-  if(candidates.length===0)throw new Error('Aucun ID de vidéo exploitable');
-  const minWait=Math.min(VIDEO_FIRST_POLL_DELAY_SEC,Math.max(40,Math.floor(90*0.7)));
-  let rem=minWait;
-  while(rem>0){if(state.stopRequested)throw new Error('Arrêt demandé');if(onProgress)onProgress('Préparation — '+rem+'s');await sleep(1000);rem--}
-  let working={builder:state.workingPollUrlBuilder||null,id:null};
-  for(let attempt=0;attempt<VIDEO_MAX_POLL_ATTEMPTS;attempt++){
-    if(state.stopRequested)throw new Error('Arrêt demandé');
-    if(attempt>0){const idx=Math.min(attempt-1,VIDEO_POLL_INTERVALS.length-1);let r=VIDEO_POLL_INTERVALS[idx];while(r>0){if(state.stopRequested)throw new Error('Arrêt demandé');if(onProgress)onProgress('Création — '+r+'s');await sleep(1000);r--}}
-    const approaches=[];
-    if(working.builder&&working.id)approaches.push({builder:working.builder,id:working.id,priority:true});
-    for(const builder of POLL_URL_BUILDERS)for(const cand of candidates){if(!approaches.some(a=>a.builder===builder&&a.id===cand.value))approaches.push({builder,id:cand.value,idLabel:cand.label})}
-    let gotSuccessResponse=false;let lastError=null;
-    for(const ap of approaches){
-      if(state.stopRequested)throw new Error('Arrêt demandé');
-      const url=ap.builder.build(ap.id);
-      try{
-        const res=await apiFetch(url,{method:'GET'},'Polling',2);
-        const d=await res.json();
-        if(!working.builder||!working.id){working.builder=ap.builder;working.id=ap.id;state.workingPollUrlBuilder=ap.builder;state.workingPollUrlBuilderSet=true;debugLog('success','POLLING','Endpoint validé : '+ap.builder.name+' · id='+(ap.idLabel||'?'))}
-        gotSuccessResponse=true;
-        const status=d.status||'unknown';const progress=d.progress||0;
-        if(onProgress)onProgress('Création — '+progress+'%');
-        debugLog('info','POLLING','status='+status+' progress='+progress+' ('+ap.builder.name+')');
-        if(status==='completed'||status==='succeeded'||status==='done'){const videoUrl=(d.metadata&&d.metadata.url)||d.url||(d.output&&d.output.url);if(!videoUrl)throw new Error('Terminé mais pas d\'URL');return videoUrl}
-        if(status==='failed'||status==='error'||status==='cancelled')throw new Error('Échec ('+status+')');
-        break;
-      }catch(e){if(e.message==='Arrêt demandé')throw e;lastError=e;if(e.status===404){debugLog('warn','POLLING','404 sur '+ap.builder.name+' id='+(ap.idLabel||'?'));continue}if(e.status===401||e.status===403)continue;debugLog('warn','POLLING','Erreur '+ap.builder.name+' : '+e.message);break}
-    }
-    if(!gotSuccessResponse&&lastError)debugLog('warn','POLLING','Itération '+attempt+' : aucune approche n\'a répondu 200 — '+lastError.message);
-  }
-  throw new Error('Délai maximal dépassé pour la génération vidéo.');
-}
 
 // ========== RSS ==========
 async function fetchViaRss2Json(rssUrl){const url='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl);const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();if(data.status!=='ok')throw new Error('rss2json status: '+data.status);return(data.items||[]).map((item,i)=>({title:item.title||'',link:item.link||'',pubDate:item.pubDate||'',source:item.author||'Google News',rank:i+1}))}
@@ -826,13 +803,14 @@ function parseRssXml(text){const parser=new DOMParser();const xmlDoc=parser.pars
 async function fetchNewsWithFallback(category){const rssUrl=GOOGLE_NEWS_RSS[category]||GOOGLE_NEWS_RSS.NATION;const methods=[{name:'rss2json',fn:()=>fetchViaRss2Json(rssUrl)},{name:'allorigins',fn:()=>fetchViaAllOrigins(rssUrl)},{name:'codetabs',fn:()=>fetchViaCodeTabs(rssUrl)}];for(const m of methods){try{debugLog('info','RSS','Tentative via '+m.name);const items=await m.fn();if(items&&items.length>0){debugLog('success','RSS',items.length+' sujets via '+m.name);return{items,method:m.name}}}catch(e){debugLog('warn','RSS',m.name+' → '+e.message)}}debugLog('warn','RSS','Aucun flux accessible — mode démo');return{items:getDemoNews(category),method:'demo'}}
 function getDemoNews(category){const demo={NATION:['Mouvement lycéen : plusieurs établissements bloqués en France','Manifestation nationale contre la réforme des retraites','Assemblée citoyenne sur les salaires et conditions de travail','Grève dans les transports publics','Rassemblement pour le pouvoir d\'achat'],WORLD:['Sommet international sur le climat','Négociations pour un cessez-le-feu','Traité commercial entre plusieurs pays','Crise humanitaire et aide internationale','Séisme et opérations de secours'],BUSINESS:['Inflation et pouvoir d\'achat des ménages','Annonce de suppressions de postes','Grève dans un grand groupe industriel','Fusion bancaire et conséquences sociales','Chute des prix de l\'énergie'],TECHNOLOGY:['Nouvelle régulation des plateformes numériques','Débat sur l\'intelligence artificielle','Cyberattaque contre un service public','Sortie d\'un nouveau smartphone','Transition numérique des administrations']};const titles=demo[category]||demo.NATION;return titles.map((title,i)=>({title,link:'#',pubDate:new Date().toISOString(),source:'Mode démo',rank:i+1}))}
 
-// ========== IMAGES (upload + compression) ==========
+// ========== IMAGES ==========
 function fileToDataUri(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=e=>resolve(e.target.result);reader.onerror=()=>reject(new Error('Erreur lecture'));reader.readAsDataURL(file)})}
 async function compressImage(dataUrl,maxSide){return new Promise((resolve)=>{const img=new Image();img.onload=()=>{try{let{width,height}=img;const scale=Math.min(1,maxSide/Math.max(width,height));width=Math.round(width*scale);height=Math.round(height*scale);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,width,height);resolve(canvas.toDataURL('image/jpeg',0.88))}catch(e){resolve(dataUrl)}};img.onerror=()=>resolve(dataUrl);img.src=dataUrl})}
 
 // ========== QUEUE PARALLÉLISÉE ==========
 function createRateLimitedQueue(maxConcurrent,minIntervalMs){let running=0;let lastStart=0;const queue=[];let resolveIdle=null;function tryNext(){if(running>=maxConcurrent)return;if(queue.length===0){if(running===0&&resolveIdle){resolveIdle();resolveIdle=null}return}const now=Date.now();const wait=Math.max(0,lastStart+minIntervalMs-now);if(wait>0){setTimeout(tryNext,wait);return}const task=queue.shift();running++;lastStart=Date.now();task().finally(()=>{running--;setTimeout(tryNext,0)})}return{add(fn){return new Promise((resolve,reject)=>{queue.push(()=>fn().then(resolve,reject));setTimeout(tryNext,0)})},idle(){return new Promise(r=>{if(running===0&&queue.length===0)return r();resolveIdle=r})}}}
-
+</script>
+<script>
 // ========== UI BINDINGS ==========
 function updateButtons(){
   const launch=document.getElementById('launch-btn');
@@ -959,13 +937,11 @@ async function generateScript(){
   const input={fact_check:state.factCheck||{},reference_analysis:state.referenceAnalysis||{},selected_characters:Array.from(state.selectedCharacters),selected_location:state.selectedLocation,palette:state.selectedPalette};
   const prompt=buildScriptPrompt(input);
   debugLog('ai','PROMPT SCÉNARIO','Envoyé ('+prompt.length+' chars)',prompt.slice(0,1500)+'…');
-  let lastContent=null;
   for(let attempt=1;attempt<=2;attempt++){
     const temp=attempt===1?0.7:0.3;
     debugLog('ai','SCÉNARIO','Tentative '+attempt+'/2 (temp='+temp+')');
     let content;
     try{content=await callTextModel(buildSystemPrompt(),prompt,'Scénario (essai '+attempt+')',16000,temp)}catch(e){debugLog('error','SCÉNARIO','Tentative '+attempt+' échouée : '+e.message);continue}
-    lastContent=content;
     if(!content){debugLog('warn','SCÉNARIO','Contenu vide');continue}
     const parsed=extractJson(content);
     if(parsed&&parsed.scenes&&Array.isArray(parsed.scenes)){debugLog('success','SCÉNARIO','JSON valide à la tentative '+attempt);return normalizeScript(parsed)}
@@ -1024,7 +1000,7 @@ function renderScript(){
   html+='<div class="script-meta">';
   html+='📍 Lieu : <strong style="color:var(--acc);">'+esc(s.location_name||'—')+'</strong><br>';
   html+='👥 Personnages : '+esc(s.characters.map(id=>CHARACTER_BIBLE[id]?CHARACTER_BIBLE[id].name:id).join(', '))+'<br>';
-  html+='🎬 '+(s.scenes||[]).length+' scènes · '+state.format+' · '+Math.round(state.durationFrames/24)+'s/scène';
+  html+='🎬 '+(s.scenes||[]).length+' scènes · '+state.format+' · '+state.stopMotionFrames+' images/scène · '+state.stopMotionFps+' fps';
   html+='</div>';
   (s.scenes||[]).forEach((sc,i)=>{
     html+='<div class="script-scene">';
@@ -1043,13 +1019,14 @@ function renderScript(){
   const badge=document.getElementById('script-badge');if(badge)badge.textContent=(s.scenes||[]).length+' scènes';
 }
 
+// ========== STOP-MOTION ==========
 function renderVideos(){
   const grid=document.getElementById('videos-grid');if(!grid)return;
   while(grid.children.length>state.videos.length)grid.removeChild(grid.lastChild);
   for(let i=grid.children.length;i<state.videos.length;i++){
     const card=document.createElement('div');
     card.className='scene-card';
-    card.dataset.index=String(i);card.dataset.status='';card.dataset.url='';
+    card.dataset.index=String(i);card.dataset.status='';card.dataset.url='';card.dataset.progress='';
     card.innerHTML='<div class="scene-card-header"><span class="scene-card-title">🎬 Scène '+(i+1)+'</span><span class="scene-card-status"></span></div><div class="scene-card-body"></div>';
     grid.appendChild(card);
   }
@@ -1062,26 +1039,57 @@ function renderVideos(){
     if(titleEl.textContent!==titleText)titleEl.textContent=titleText;
     const newClass='scene-card '+(v.status==='done'?'done':v.status==='error'?'error':(v.status==='loading'||v.status==='pending')?'generating':'');
     if(card.className!==newClass)card.className=newClass;
-    if(v.status==='done'&&v.url){if(card.dataset.url!==v.url||!bodyEl.querySelector('video')){statusEl.innerHTML='<span style="color:var(--ok);">✓</span>';bodyEl.innerHTML='';const video=document.createElement('video');video.src=v.url;video.controls=true;video.preload='metadata';video.setAttribute('playsinline','');bodyEl.appendChild(video);const dl=document.createElement('a');dl.className='scene-download';dl.href=v.url;dl.target='_blank';dl.rel='noopener noreferrer';dl.textContent='⬇ Ouvrir dans un onglet';bodyEl.appendChild(dl);card.dataset.url=v.url}}
-    else if(v.status==='error'){if(card.dataset.status!=='error'){statusEl.innerHTML='<span style="color:var(--err);">✕</span>';bodyEl.innerHTML='<div class="scene-placeholder" style="color:var(--err);">Erreur : '+esc(v.error||'inconnue')+'</div>'}}
-    else{statusEl.innerHTML='<span class="spinner-mini"></span>';const progressTxt=v.progress||'En attente…';if(card.dataset.progress!==progressTxt||card.dataset.status!==v.status)bodyEl.innerHTML='<div class="scene-placeholder"><div class="spinner-mini"></div><span>'+esc(progressTxt)+'</span></div>'}
+    if(v.status==='done'&&v.frames&&v.frames.length){
+      if(card.dataset.url!==('frames-'+i)||!bodyEl.querySelector('.stopmotion-preview')){
+        statusEl.innerHTML='<span style="color:var(--ok);">✓ '+v.frames.length+' img</span>';
+        bodyEl.innerHTML='';
+        const preview=document.createElement('div');
+        preview.className='stopmotion-preview';
+        preview.style.aspectRatio=(state.format==='9:16'?'9/16':'16/9');
+        const img=document.createElement('img');
+        img.src=v.frames[0];
+        preview.appendChild(img);
+        const info=document.createElement('div');
+        info.style.cssText='position:absolute;bottom:4px;left:4px;right:4px;padding:.35rem .5rem;background:rgba(0,0,0,.7);border-radius:2px;font-size:.62rem;font-family:var(--fm);color:#e5c15a;text-align:center;';
+        info.textContent='🎬 '+v.frames.length+' images · '+(v.fps||state.stopMotionFps)+' fps';
+        preview.appendChild(info);
+        let currentFrame=0;let animInterval=null;
+        const startAnim=()=>{if(animInterval)return;animInterval=setInterval(()=>{currentFrame=(currentFrame+1)%v.frames.length;img.src=v.frames[currentFrame]},1000/(v.fps||state.stopMotionFps))};
+        const stopAnim=()=>{if(animInterval){clearInterval(animInterval);animInterval=null}};
+        preview.addEventListener('mouseenter',startAnim);preview.addEventListener('mouseleave',stopAnim);
+        preview.addEventListener('touchstart',(e)=>{e.preventDefault();startAnim()},{passive:false});
+        preview.addEventListener('touchend',stopAnim);
+        bodyEl.appendChild(preview);
+        const dl=document.createElement('a');
+        dl.className='scene-download';dl.href='#';dl.textContent='⬇ Télécharger les '+v.frames.length+' images';
+        dl.addEventListener('click',(e)=>{e.preventDefault();v.frames.forEach((url,idx)=>{const a=document.createElement('a');a.href=url;a.download='scene-'+(i+1)+'-frame-'+String(idx+1).padStart(2,'0')+'.jpg';a.target='_blank';document.body.appendChild(a);setTimeout(()=>{a.click();document.body.removeChild(a)},idx*200)});showToast('Téléchargement des '+v.frames.length+' images…','success')});
+        bodyEl.appendChild(dl);
+        card.dataset.url='frames-'+i;
+      }
+    } else if(v.status==='error'){
+      if(card.dataset.status!=='error'){statusEl.innerHTML='<span style="color:var(--err);">✕</span>';bodyEl.innerHTML='<div class="scene-placeholder" style="color:var(--err);">Erreur : '+esc(v.error||'inconnue')+'</div>'}
+    } else {
+      statusEl.innerHTML='<span class="spinner-mini"></span>';
+      const progressTxt=v.progress||'En attente…';
+      if(card.dataset.progress!==progressTxt||card.dataset.status!==v.status)bodyEl.innerHTML='<div class="scene-placeholder"><div class="spinner-mini"></div><span>'+esc(progressTxt)+'</span></div>';
+    }
     card.dataset.status=v.status||'';card.dataset.progress=v.progress||'';
   });
   const c=document.getElementById('videos-count');if(c)c.textContent=state.videos.filter(v=>v.status==='done').length+'/'+state.videos.length;
 }
 
-async function generateAllVideos(){
+async function generateAllScenes(){
   state.videos=[];state.isRunning=true;state.stopRequested=false;
   document.getElementById('stop-btn').classList.add('visible');
   document.getElementById('launch-btn').disabled=true;
   const scenes=(state.script.scenes||[]).slice(0,state.sceneCount);
-  for(let i=0;i<scenes.length;i++)state.videos.push({status:'pending',url:null,progress:'En attente…',type:scenes[i].type||'scene'});
+  for(let i=0;i<scenes.length;i++)state.videos.push({status:'pending',frames:null,fps:state.stopMotionFps,progress:'En attente…',type:scenes[i].type||'scene'});
   renderVideos();revealSection('section-videos');
   const workerCount=Math.max(1,state.keyPool.filter(k=>k.active).length);
-  journalLog('Lancement de '+workerCount+' worker(s) sur '+scenes.length+' scènes.','video');
+  journalLog('Lancement de '+workerCount+' worker(s) sur '+scenes.length+' scènes ('+state.stopMotionFrames+' images/scène).','video');
   const queue=scenes.map((scene,index)=>({scene,index}));
   const workers=[];
-  for(let w=0;w<workerCount;w++)workers.push(videoWorker(w,queue));
+  for(let w=0;w<workerCount;w++)workers.push(sceneWorker(w,queue));
   await Promise.all(workers);
   state.isRunning=false;state.stopRequested=false;
   document.getElementById('stop-btn').classList.remove('visible');
@@ -1091,48 +1099,90 @@ async function generateAllVideos(){
   else journalLog('Aucune scène n\'a pu être générée.','error');
 }
 
-async function videoWorker(workerId,queue){while(queue.length>0&&!state.stopRequested){const task=queue.shift();if(!task)break;await generateOneVideo(task.scene,task.index,workerId)}}
+async function sceneWorker(workerId,queue){while(queue.length>0&&!state.stopRequested){const task=queue.shift();if(!task)break;await generateOneScene(task.scene,task.index,workerId)}}
 
-async function generateOneVideo(scene,index,workerId){
+async function generateOneScene(scene,index,workerId){
   if(state.stopRequested)return;
   state.videos[index].status='loading';state.videos[index].progress='Initialisation…';renderVideos();
-  journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' ('+(scene.type||'scene')+')','video');
+  journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' ('+state.stopMotionFrames+' images)','video');
   try{
-    let imageUrl=null;
+    // ÉTAPE 1 : image d'ancrage
+    let baseImageUrl=null;
     try{
-      const imgPrompt=buildImagePrompt(scene);
+      const anchorPrompt=buildAnchorImagePrompt(scene);
+      state.videos[index].progress='Image d\'ancrage…';
+      renderVideos();
       journalLog('Worker '+(workerId+1)+' → image d\'ancrage scène '+(index+1)+'…','video');
-      imageUrl=await callImageModel(imgPrompt,'1K',state.format);
-      debugLog('success','IMAGE '+(index+1),'Image d\'ancrage OK');
-    }catch(e){if(e.message==='Arrêt demandé')return;debugLog('warn','IMAGE '+(index+1),'Image échouée : '+e.message)}
+      baseImageUrl=await callImageModel(anchorPrompt,'1K',state.format);
+      debugLog('success','ANCRAGE '+(index+1),'Image d\'ancrage OK');
+    }catch(e){if(e.message==='Arrêt demandé')return;debugLog('warn','ANCRAGE '+(index+1),'Image échouée : '+e.message)}
     if(state.stopRequested)return;
-    state.videos[index].progress='Création tâche…';renderVideos();
-    const videoPrompt=buildVideoPrompt(scene);
-    const videoIdObj=await callVideoModel(videoPrompt,imageUrl,state.durationFrames);
-    if(state.stopRequested)return;
-    state.videos[index].progress='Génération vidéo…';renderVideos();
-    const videoUrl=await pollVideoJob(videoIdObj,(prog)=>{state.videos[index].progress=prog;renderVideos()});
-    state.videos[index]={status:'done',url:videoUrl,progress:'Terminé',type:scene.type||'scene'};
+
+    // ÉTAPE 2 : génération des N images stop-motion
+    state.videos[index].progress='Génération des '+state.stopMotionFrames+' images…';
     renderVideos();
-    journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' prête ✓','success');
-    debugLog('success','VIDÉO '+(index+1),'Terminée');
+    const frames=new Array(state.stopMotionFrames).fill(null);
+    const imageQueue=createRateLimitedQueue(IMAGE_PARALLEL,IMAGE_INTERVAL_MS);
+    const tasks=[];
+    for(let f=0;f<state.stopMotionFrames;f++){
+      const frameIdx=f;
+      tasks.push(imageQueue.add(async()=>{
+        if(state.stopRequested)return;
+        const motionPhrase=pickMotionPhrase(frameIdx,state.stopMotionFrames,scene);
+        const prompt=buildStopMotionPrompt(scene,motionPhrase,frameIdx,state.stopMotionFrames);
+        try{
+          const url=await callImageModel(prompt,'1K',state.format);
+          frames[frameIdx]=url;
+          const completed=frames.filter(Boolean).length;
+          state.videos[index].progress='Images : '+completed+'/'+state.stopMotionFrames;
+          renderVideos();
+          debugLog('success','FRAME '+(frameIdx+1)+'/'+state.stopMotionFrames,'OK');
+        }catch(e){
+          if(e.message==='Arrêt demandé')return;
+          debugLog('error','FRAME '+(frameIdx+1),e.message);
+          frames[frameIdx]=frames[frameIdx-1]||baseImageUrl||null;
+        }
+      }));
+    }
+    await Promise.allSettled(tasks);
+    await imageQueue.idle();
+    if(state.stopRequested)return;
+
+    const validFrames=frames.filter(Boolean);
+    if(validFrames.length===0)throw new Error('Aucune image générée');
+    for(let f=0;f<state.stopMotionFrames;f++)if(!frames[f])frames[f]=validFrames[validFrames.length-1];
+
+    // ÉTAPE 3 : succès
+    state.videos[index]={
+      status:'done',
+      frames:frames,
+      fps:state.stopMotionFps,
+      progress:'Terminé',
+      type:scene.type||'scene',
+      duration:(frames.length/state.stopMotionFps).toFixed(1)+'s'
+    };
+    renderVideos();
+    journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' prête ✓ ('+validFrames.length+' images)','success');
+    debugLog('success','SCÈNE '+(index+1),'Terminée en stop-motion');
   }catch(e){
     if(e.message==='Arrêt demandé')return;
-    state.videos[index]={status:'error',url:null,progress:'Erreur',type:scene.type||'scene',error:e.message};
+    state.videos[index]={status:'error',frames:null,progress:'Erreur',type:scene.type||'scene',error:e.message};
     renderVideos();
     journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' échouée : '+e.message.slice(0,80),'error');
-    debugLog('error','VIDÉO '+(index+1),e.message);
+    debugLog('error','SCÈNE '+(index+1),e.message);
   }
 }
 
+// ========== TTS ==========
 let ttsVoice=null;
 function initTTS(){if(!('speechSynthesis'in window))return;const update=()=>{const voices=window.speechSynthesis.getVoices();if(!voices||voices.length===0)return;const fr=voices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith('fr'));if(fr.length===0)return;const preferred=fr.find(v=>/premium|enhanced|amelie|thomas|audrey|marie/i.test(v.name));ttsVoice=preferred||fr[0];debugLog('success','TTS','Voix FR : '+ttsVoice.name)};update();window.speechSynthesis.onvoiceschanged=update}
 function speakFR(text){if(!state.voiceEnabled)return;if(!('speechSynthesis'in window))return;if(!text)return;try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='fr-FR';u.rate=1.02;u.pitch=1.0;u.volume=1.0;if(ttsVoice)u.voice=ttsVoice;window.speechSynthesis.speak(u);state.currentUtterance=u;journalLog('🔊 « '+text.slice(0,90)+(text.length>90?'…':'')+' »','voice')}catch(e){debugLog('warn','TTS','Erreur : '+e.message)}}
 function stopTTS(){try{if('speechSynthesis'in window)window.speechSynthesis.cancel()}catch(e){}state.currentUtterance=null}
 function getSceneSpeechLine(scene){if(scene.narration)return scene.narration;if(scene.dialogue)return scene.dialogue;return''}
 
+// ========== PLAYER ==========
 async function playFilm(){
-  const ready=state.videos.filter(v=>v.status==='done'&&v.url);
+  const ready=state.videos.filter(v=>v.status==='done'&&v.frames&&v.frames.length>0);
   if(ready.length===0){showToast('Aucune scène à diffuser','error');return}
   if(state.isPlayingFilm)return;
   state.isPlayingFilm=true;updateButtons();
@@ -1156,56 +1206,70 @@ async function playFilm(){
     if(!state.isPlayingFilm)break;
     const{video,scene}=readyWithScene[i];
     journalLog('Séquence '+(i+1)+'/'+readyWithScene.length+' — '+(scene.type||''),'play');
-    await playOneScene(video,scene,ctx,canvas,dpr);
+    await playStopMotionScene(video,scene,ctx,canvas,dpr);
   }
   stopFilmPlayback();
   journalLog('Diffusion terminée.','success');
 }
 
-function playOneScene(videoObj,scene,ctx,canvas,dpr){
-  return new Promise((resolve)=>{
-    const video=document.createElement('video');
-    video.src=videoObj.url;video.playsInline=true;video.muted=true;
-    let ttsFired=false;let finished=false;
-    const finish=()=>{if(finished)return;finished=true;resolve()};
+async function playStopMotionScene(videoObj,scene,ctx,canvas,dpr){
+  return new Promise(async(resolve)=>{
+    const frames=videoObj.frames;
+    const fps=videoObj.fps||state.stopMotionFps;
+    const frameDuration=1000/fps;
+    const totalDuration=frames.length*frameDuration;
+    const images=await Promise.all(frames.map(url=>new Promise((res)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url})));
+    const validImages=images.filter(Boolean);
+    if(validImages.length===0){resolve();return}
+    let ttsFired=false;
     const startTTS=()=>{if(ttsFired)return;ttsFired=true;const line=getSceneSpeechLine(scene);if(line)speakFR(line)};
-    const ttsGuard=setTimeout(()=>{startTTS()},2000);
-    const drawOverlay=(w,h)=>{
-      const t=video.currentTime||0;const dur=video.duration||(state.durationFrames/24)||8;
-      let alpha=1;if(t<0.4)alpha=t/0.4;else if(dur-t<0.5)alpha=Math.max(0,(dur-t)/0.5);
-      if(alpha<=0)return;
-      const pad=Math.round(Math.min(30*dpr,w*0.03));
-      const bandH=Math.round(Math.min(96*dpr,h*0.16));
-      const bandY=h-bandH-pad;const bandX=pad;const bandW=w-pad*2;
-      ctx.save();ctx.globalAlpha=alpha;
-      const grad=ctx.createLinearGradient(bandX,bandY,bandX,bandY+bandH);
-      grad.addColorStop(0,'rgba(10,10,18,0.0)');grad.addColorStop(0.35,'rgba(10,10,18,0.85)');grad.addColorStop(1,'rgba(10,10,18,0.95)');
-      ctx.fillStyle=grad;ctx.fillRect(bandX,bandY,bandW,bandH);
-      ctx.fillStyle='#e5c15a';ctx.fillRect(bandX,bandY+Math.round(bandH*0.15),Math.round(5*dpr),bandH-Math.round(bandH*0.3));
-      const speakerName=(scene.characters&&scene.characters.length>0&&CHARACTER_BIBLE[scene.characters[0]])?CHARACTER_BIBLE[scene.characters[0]].name:'';
-      const nameSize=Math.round(Math.min(15*dpr,h*0.022));
-      const textSize=Math.round(Math.min(22*dpr,h*0.032));
-      if(speakerName){ctx.fillStyle='#e5c15a';ctx.font='700 '+nameSize+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='top';ctx.fillText(speakerName.toUpperCase(),bandX+Math.round(bandH*0.22),bandY+Math.round(bandH*0.18))}
-      const overlayText=scene.narration||scene.dialogue||scene.visual_description||'';
-      if(overlayText){ctx.fillStyle='#f5f0e1';ctx.font='500 '+textSize+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='top';let txt=overlayText;const maxW=bandW-Math.round(bandH*0.4);while(ctx.measureText(txt).width>maxW&&txt.length>4)txt=txt.slice(0,-4)+'…';ctx.fillText(txt,bandX+Math.round(bandH*0.22),bandY+Math.round(bandH*0.5))}
-      ctx.fillStyle='rgba(245,240,225,0.55)';ctx.font='400 '+Math.round(nameSize*0.85)+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='bottom';ctx.fillText('Reconstitution manga · générée par IA',bandX+Math.round(bandH*0.22),bandY+bandH-Math.round(bandH*0.12));
-      ctx.restore();
-    };
-    const draw=()=>{
+    setTimeout(startTTS,300);
+    const startTime=Date.now();let rafId=null;
+    const render=()=>{
+      if(!state.isPlayingFilm){if(rafId)cancelAnimationFrame(rafId);resolve();return}
+      const elapsed=Date.now()-startTime;
+      const progress=Math.min(elapsed/totalDuration,1);
+      const frameIdx=Math.min(Math.floor(elapsed/frameDuration),validImages.length-1);
+      const img=validImages[frameIdx];
       ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
-      const vw=video.videoWidth||720;const vh=video.videoHeight||1280;
-      const ar=vw/vh;const car=canvas.width/canvas.height;
-      let dw,dh,dx,dy;if(ar>car){dw=canvas.width;dh=canvas.width/ar;dx=0;dy=(canvas.height-dh)/2}else{dh=canvas.height;dw=canvas.height*ar;dx=(canvas.width-dw)/2;dy=0}
-      try{ctx.drawImage(video,dx,dy,dw,dh)}catch(e){}
-      drawOverlay(canvas.width,canvas.height);
+      if(img){
+        const ar=img.width/img.height;const car=canvas.width/canvas.height;
+        let dw,dh,dx,dy;
+        if(ar>car){dw=canvas.width;dh=canvas.width/ar;dx=0;dy=(canvas.height-dh)/2}
+        else{dh=canvas.height;dw=canvas.height*ar;dx=(canvas.width-dw)/2;dy=0}
+        try{ctx.drawImage(img,dx,dy,dw,dh)}catch(e){}
+      }
+      drawSceneOverlay(ctx,canvas,dpr,scene,progress);
+      if(progress<1&&state.isPlayingFilm){rafId=requestAnimationFrame(render)}
+      else{resolve()}
     };
-    const loop=()=>{if(!state.isPlayingFilm){clearTimeout(ttsGuard);finish();return}if(video.paused||video.ended){clearTimeout(ttsGuard);finish();return}draw();state.playRAF=requestAnimationFrame(loop)};
-    video.onloadedmetadata=()=>{clearTimeout(ttsGuard);startTTS();video.play().then(()=>{loop()}).catch(()=>{startTTS();finish()})};
-    video.oncanplay=()=>{startTTS()};
-    video.onended=()=>{clearTimeout(ttsGuard);finish()};
-    video.onerror=()=>{startTTS();clearTimeout(ttsGuard);finish()};
-    video.load();
+    render();
   });
+}
+
+function drawSceneOverlay(ctx,canvas,dpr,scene,progress){
+  const w=canvas.width;const h=canvas.height;
+  let alpha=1;
+  if(progress<0.05)alpha=progress/0.05;
+  else if(progress>0.95)alpha=(1-progress)/0.05;
+  alpha=Math.max(0,Math.min(1,alpha));
+  if(alpha<=0)return;
+  const pad=Math.round(Math.min(30*dpr,w*0.03));
+  const bandH=Math.round(Math.min(96*dpr,h*0.16));
+  const bandY=h-bandH-pad;const bandX=pad;const bandW=w-pad*2;
+  ctx.save();ctx.globalAlpha=alpha;
+  const grad=ctx.createLinearGradient(bandX,bandY,bandX,bandY+bandH);
+  grad.addColorStop(0,'rgba(10,10,18,0.0)');grad.addColorStop(0.35,'rgba(10,10,18,0.85)');grad.addColorStop(1,'rgba(10,10,18,0.95)');
+  ctx.fillStyle=grad;ctx.fillRect(bandX,bandY,bandW,bandH);
+  ctx.fillStyle='#e5c15a';ctx.fillRect(bandX,bandY+Math.round(bandH*0.15),Math.round(5*dpr),bandH-Math.round(bandH*0.3));
+  const speakerName=(scene.characters&&scene.characters.length>0&&CHARACTER_BIBLE[scene.characters[0]])?CHARACTER_BIBLE[scene.characters[0]].name:'';
+  const nameSize=Math.round(Math.min(15*dpr,h*0.022));
+  const textSize=Math.round(Math.min(22*dpr,h*0.032));
+  if(speakerName){ctx.fillStyle='#e5c15a';ctx.font='700 '+nameSize+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='top';ctx.fillText(speakerName.toUpperCase(),bandX+Math.round(bandH*0.22),bandY+Math.round(bandH*0.18))}
+  const overlayText=scene.narration||scene.dialogue||scene.visual_description||'';
+  if(overlayText){ctx.fillStyle='#f5f0e1';ctx.font='500 '+textSize+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='top';let txt=overlayText;const maxW=bandW-Math.round(bandH*0.4);while(ctx.measureText(txt).width>maxW&&txt.length>4)txt=txt.slice(0,-4)+'…';ctx.fillText(txt,bandX+Math.round(bandH*0.22),bandY+Math.round(bandH*0.5))}
+  ctx.fillStyle='rgba(245,240,225,0.55)';ctx.font='400 '+Math.round(nameSize*0.85)+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='bottom';ctx.fillText('Reconstitution manga · stop-motion · généré par IA',bandX+Math.round(bandH*0.22),bandY+bandH-Math.round(bandH*0.12));
+  ctx.restore();
 }
 
 function stopFilmPlayback(){state.isPlayingFilm=false;if(state.playRAF)cancelAnimationFrame(state.playRAF);state.playRAF=null;stopTTS();const overlay=document.getElementById('player-overlay');if(overlay)overlay.classList.remove('visible');updateButtons()}
@@ -1226,6 +1290,7 @@ async function runPipeline(){
   journalLog('Sujet : « '+state.selectedNews.title.slice(0,80)+' »','info');
   journalLog('Personnages : '+Array.from(state.selectedCharacters).map(id=>CHARACTER_BIBLE[id].name).join(', '),'info');
   journalLog('Lieu : '+(state.selectedLocation?LOCATION_BIBLE[state.selectedLocation].name:'(libre)'),'info');
+  journalLog('Mode : stop-motion · '+state.stopMotionFrames+' images/scène · '+state.stopMotionFps+' fps','info');
   try{
     setStatus('Étape 1/2 — Scénario…');
     const script=await generateScript();
@@ -1234,12 +1299,12 @@ async function runPipeline(){
     journalLog('Scénario prêt : '+script.scenes.length+' scènes.','success');
     await sleep(600);
     if(state.stopRequested)throw new Error('Arrêt demandé');
-    setStatus('Étape 2/2 — Génération des scènes vidéo…');
-    await generateAllVideos();
+    setStatus('Étape 2/2 — Génération des scènes stop-motion…');
+    await generateAllScenes();
     if(state.stopRequested)throw new Error('Arrêt demandé');
     setStatus('✦ Séquence prête ✦');
     await sleep(1500);setStatus(null);
-    showToast('Séquence générée','success');
+    showToast('Séquence stop-motion générée','success');
   }catch(e){
     if(e.message==='Arrêt demandé'){journalLog('Arrêt demandé.','warn');setStatus('Arrêté.');await sleep(1200);setStatus(null)}
     else{journalLog('Erreur : '+e.message,'error');debugLog('error','PIPELINE',e.message);setStatus('Erreur — voir console.');await sleep(2400);setStatus(null)}
@@ -1249,7 +1314,7 @@ async function runPipeline(){
   updateButtons();
 }
 
-function loadDemoMode(){if(hasActiveKey())return;journalLog('MODE DÉMONSTRATION LOCAL — aucune clé API configurée.','warn');journalLog('Les vidéos de test ne sont PAS des générations IA ni des documents réels.','warn');state.videos=[{status:'error',url:null,progress:'Mode démo — pas de vidéo de test',type:'demo'}];renderVideos()}
+function loadDemoMode(){if(hasActiveKey())return;journalLog('MODE DÉMONSTRATION LOCAL — aucune clé API configurée.','warn');journalLog('Les vidéos de test ne sont PAS des générations IA ni des documents réels.','warn');state.videos=[{status:'error',frames:null,progress:'Mode démo — pas de scène de test',type:'demo'}];renderVideos()}
 
 async function handleReferenceFile(file){
   if(!file)return;
@@ -1275,7 +1340,7 @@ function renderReferenceDrop(){
 
 function bindRefDrop(){const input=document.getElementById('ref-file-input');if(!input)return;input.addEventListener('change',(e)=>{const file=e.target.files&&e.target.files[0];if(file)handleReferenceFile(file)})}
 
-// ========== INITIALISATION ==========
+// ========== INIT ==========
 (function init(){
   const saveBtn=document.getElementById('api-save-btn');if(saveBtn)saveBtn.addEventListener('click',saveKeysFromUI);
   const apiInput=document.getElementById('api-keys-input');
@@ -1284,7 +1349,8 @@ function bindRefDrop(){const input=document.getElementById('ref-file-input');if(
   const loadNewsBtn=document.getElementById('load-news-btn');if(loadNewsBtn)loadNewsBtn.addEventListener('click',loadNews);
   bindRefDrop();
   const sceneCountSel=document.getElementById('scene-count-select');if(sceneCountSel)sceneCountSel.addEventListener('change',e=>{state.sceneCount=parseInt(e.target.value,10)});
-  const durationSel=document.getElementById('duration-select');if(durationSel)durationSel.addEventListener('change',e=>{state.durationFrames=parseInt(e.target.value,10)});
+  const framesSel=document.getElementById('stopmotion-frames-select');if(framesSel)framesSel.addEventListener('change',e=>{state.stopMotionFrames=parseInt(e.target.value,10);debugLog('info','CONFIG','Images par scène : '+state.stopMotionFrames)});
+  const fpsSel=document.getElementById('stopmotion-fps-select');if(fpsSel)fpsSel.addEventListener('change',e=>{state.stopMotionFps=parseInt(e.target.value,10);debugLog('info','CONFIG','FPS : '+state.stopMotionFps)});
   const formatSel=document.getElementById('format-select');if(formatSel)formatSel.addEventListener('change',e=>{state.format=e.target.value});
   const intensitySel=document.getElementById('intensity-select');if(intensitySel)intensitySel.addEventListener('change',e=>{state.intensity=e.target.value});
   const launchBtn=document.getElementById('launch-btn');if(launchBtn)launchBtn.addEventListener('click',runPipeline);
@@ -1303,15 +1369,13 @@ function bindRefDrop(){const input=document.getElementById('ref-file-input');if(
   const storedKeys=getStoredKeys();if(storedKeys.length>0&&apiInput)apiInput.value=storedKeys.join('\n');
   updateApiPanel();updateButtons();renderNewsList();renderCharactersGrid();renderLocationsGrid();renderPalettesGrid();renderVideos();renderScript();initTTS();
   setInterval(renderKeysStatus,1000);
-  debugLog('success','INIT','Cinéma Studio — Actualité Manga v1');
-  debugLog('info','INIT','Pipeline : RSS → Fact-check → Références → Scénario → Images + Vidéos → Player');
-  debugLog('info','INIT','Modèles : '+MODEL_TEXT+' / '+MODEL_IMAGE+' / '+MODEL_VIDEO);
-  debugLog('info','INIT','Parser JSON renforcé (5 stratégies en cascade)');
-  debugLog('info','INIT','Polling vidéo multi-endpoints (4 routes testées en cascade)');
-  debugLog('info','INIT','Multi-clés API (rotation automatique + cooldown sur 429)');
-  debugLog('info','INIT','Reconstitution manga — jamais présentée comme documentaire réelle');
-  journalLog('Bienvenue dans Cinéma Studio — Actualité Manga.','highlight');
-  journalLog('Pipeline : RSS → Vérification factuelle → Analyse de référence → Scénario → Images → Vidéos → Lecture.','info');
+  debugLog('success','INIT','Cinéma Studio — Actualité Manga v2 (stop-motion)');
+  debugLog('info','INIT','Mode : stop-motion ('+state.stopMotionFrames+' images/scène · '+state.stopMotionFps+' fps)');
+  debugLog('info','INIT','Pipeline : RSS → Fact-check → Références → Scénario → Images → Stop-motion → Player');
+  debugLog('info','INIT','Modèles : '+MODEL_TEXT+' / '+MODEL_IMAGE);
+  debugLog('info','INIT','Parser JSON renforcé · Multi-clés API · Anti-clonage');
+  journalLog('Bienvenue dans Cinéma Studio — Actualité Manga (mode stop-motion).','highlight');
+  journalLog('Chaque scène est générée en '+state.stopMotionFrames+' images clés animées à '+state.stopMotionFps+' fps.','info');
   journalLog('Les scènes produites sont des reconstitutions manga fictives inspirées de faits réels et générées par IA.','info');
   if(!hasActiveKey())setTimeout(()=>loadDemoMode(),500);
 })();
