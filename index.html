@@ -1,1 +1,1384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cinéma Studio — Actualité Manga</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#0a0a12;--bg2:#12121c;--bg3:#1a1a28;
+--panel:#16161f;--border:#2a2a3a;
+--ink:#e8e6e0;--dim:#8a8896;--faint:#4a4858;
+--acc:#e5c15a;--acc2:#e87b35;
+--ok:#4a9d6a;--err:#c85a4a;--warn:#d4a017;
+--r:6px;--fs:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+--fm:ui-monospace,'SF Mono',Menlo,monospace;
+}
+html,body{background:var(--bg)}
+body{font-family:var(--fs);background:var(--bg);color:var(--ink);min-height:100vh;padding:1.5rem 1rem 24rem;font-size:15px;line-height:1.55;max-width:1100px;margin:0 auto}
+header{margin-bottom:1.2rem;text-align:center;padding:1rem 0 1.4rem;position:relative}
+header::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:180px;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.5}
+h1{font-size:1.9rem;font-weight:300;margin-bottom:.4rem;background:linear-gradient(135deg,var(--acc2),var(--acc));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{font-size:.85rem;color:var(--dim);font-style:italic}
+.toast{position:fixed;top:1.5rem;left:50%;transform:translateX(-50%) translateY(-120px);background:var(--bg3);color:var(--ink);border:1px solid var(--border);border-left:3px solid var(--acc);padding:.85rem 1.4rem;border-radius:var(--r);font-size:.85rem;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:1000;opacity:0;transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .35s;max-width:90vw;text-align:center;display:flex;align-items:center;gap:.6rem}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-left-color:var(--ok)}.toast.error{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.banner{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--acc);padding:1rem 1.15rem;border-radius:var(--r);font-size:.8rem;color:var(--dim);margin-bottom:1.2rem;line-height:1.6}
+.banner strong{color:var(--ink)}.banner .hl{color:var(--acc)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.3rem;margin-bottom:1rem}
+.panel.ok{box-shadow:inset 3px 0 0 var(--ok)}
+input[type=password],input[type=text],textarea{width:100%;padding:.85rem 1rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-family:var(--fm);font-size:.78rem;margin-bottom:.6rem}
+textarea{resize:vertical;min-height:76px;line-height:1.5;font-family:var(--fs);font-size:.88rem}
+input:focus,textarea:focus{outline:none;border-color:var(--acc)}
+.btn{width:100%;padding:.85rem 1.2rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-bottom:.7rem;transition:all .2s;font-family:inherit}
+.btn:hover:not(:disabled){background:var(--bg3);border-color:var(--acc)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{border-color:var(--acc);background:linear-gradient(135deg,rgba(232,123,53,.2),rgba(229,193,90,.15));color:var(--acc);font-size:1.15rem;padding:1.5rem;letter-spacing:.25em}
+.btn-primary:disabled{opacity:.5}
+.btn-stop{border-color:var(--err);color:var(--err);background:transparent;display:none}
+.btn-stop.visible{display:block}
+.status{font-size:.75rem;padding:.6rem .9rem;border-radius:var(--r);margin-bottom:.5rem;display:flex;align-items:center;gap:.6rem;background:var(--bg2);color:var(--dim);border:1px solid var(--border)}
+.status.ok{background:rgba(74,157,106,.08);color:var(--ok);border-color:rgba(74,157,106,.3)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
+.status.ok .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.hint{font-size:.72rem;color:var(--dim);margin-top:.5rem}
+.hint a{color:var(--acc);text-decoration:none}
+.keys-list{margin-top:.7rem}
+.key-row{padding:.4rem .7rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:.35rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem;font-family:var(--fm);font-size:.72rem}
+.key-row .key-id{color:var(--acc);font-weight:600;letter-spacing:.03em}
+.key-row .key-state{font-size:.62rem;padding:.15rem .5rem;border-radius:2px;background:rgba(74,157,106,.15);color:var(--ok);border:1px solid rgba(74,157,106,.3);letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.key-row .key-state.cool{background:rgba(212,160,23,.15);color:var(--warn);border-color:rgba(212,160,23,.3)}
+.key-row .key-state.dead{background:rgba(200,90,74,.15);color:var(--err);border-color:rgba(200,90,74,.3)}
+.section{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden}
+.section.hidden{display:none!important}
+.section-header{padding:1rem 1.2rem;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.section-title{font-size:.85rem;text-transform:uppercase;letter-spacing:.2em;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.badge{display:inline-block;padding:.15rem .55rem;background:transparent;color:var(--acc);border:1px solid var(--border);border-radius:2px;font-size:.6rem;letter-spacing:.15em;font-weight:600}
+.chevron{font-size:.7rem;color:var(--faint);transition:transform .3s}
+.section.open .chevron{transform:rotate(180deg);color:var(--acc)}
+.section-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.section.open .section-body{max-height:20000px}
+.section-content{padding:0 1.2rem 1.2rem}
+.news-list{max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)}
+.news-item{padding:.7rem .9rem;border-bottom:1px dashed rgba(255,255,255,.06);font-size:.8rem;display:flex;gap:.6rem;align-items:flex-start;cursor:pointer;transition:background .2s}
+.news-item:hover{background:rgba(229,193,90,.04)}
+.news-item.selected{background:rgba(229,193,90,.08);border-left:2px solid var(--acc)}
+.news-checkbox{width:18px;height:18px;border-radius:3px;border:2px solid var(--faint);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transition:all .2s}
+.news-item.selected .news-checkbox{background:var(--acc);border-color:var(--acc);color:var(--bg)}
+.news-title{color:var(--ink);line-height:1.4;flex:1}
+.news-source{font-size:.65rem;color:var(--faint);margin-top:.2rem;display:block}
+.bible-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.6rem;margin-top:.6rem}
+.bible-card{padding:.9rem .8rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:.3rem}
+.bible-card:hover{border-color:var(--faint)}
+.bible-card.selected{border-color:var(--acc);background:rgba(229,193,90,.06);box-shadow:0 0 12px rgba(229,193,90,.2)}
+.bible-card .bible-name{font-size:.85rem;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:.4rem}
+.bible-card .bible-role{font-size:.68rem;color:var(--acc);letter-spacing:.1em;text-transform:uppercase}
+.bible-card .bible-app{font-size:.7rem;color:var(--dim);line-height:1.35;margin-top:.2rem}
+.bible-card .bible-check{font-size:.65rem;color:var(--acc);font-weight:700;margin-top:.3rem;min-height:14px}
+.bible-card.selected .bible-check::after{content:'✓ SÉLECTIONNÉ'}
+.bible-card:not(.selected) .bible-check::after{content:'+ ajouter'}
+.location-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+.location-chip{padding:.5rem .9rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--dim);font-size:.75rem;cursor:pointer;transition:all .2s;letter-spacing:.05em}
+.location-chip:hover{border-color:var(--faint);color:var(--ink)}
+.location-chip.selected{border-color:var(--acc);color:var(--acc);background:rgba(229,193,90,.06)}
+.ref-drop{border:2px dashed var(--border);border-radius:var(--r);padding:1.2rem 1rem;background:var(--bg2);text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.ref-drop:hover{border-color:var(--acc);background:rgba(229,193,90,.03)}
+.ref-drop.has-image{padding:0;border-style:solid;border-color:var(--acc)}
+.ref-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ref-drop .ref-icon{font-size:2rem;color:var(--acc);opacity:.6;margin-bottom:.5rem}
+.ref-drop .ref-text{font-size:.82rem;color:var(--dim);line-height:1.5}
+.ref-drop .ref-text strong{color:var(--acc)}
+.ref-drop .ref-hint{font-size:.68rem;color:var(--faint);margin-top:.4rem;font-family:var(--fm)}
+.ref-preview{position:relative;display:block;width:100%;max-height:220px;overflow:hidden}
+.ref-preview img{width:100%;height:auto;display:block;max-height:220px;object-fit:contain;background:#000}
+.ref-preview .ref-remove{position:absolute;top:.5rem;right:.5rem;background:rgba(200,90,74,.85);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:.9rem;cursor:pointer}
+.ref-preview .ref-label{position:absolute;bottom:0;left:0;right:0;padding:.4rem .6rem;background:linear-gradient(transparent,rgba(10,10,18,.9));font-size:.65rem;font-family:var(--fm);color:var(--acc)}
+.analysis-block{margin-top:.7rem;padding:.9rem 1rem;background:rgba(168,216,200,.05);border:1px solid var(--border);border-left:2px solid #a8d8c8;border-radius:var(--r);font-size:.78rem;line-height:1.6}
+.analysis-block .an-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;color:#a8d8c8;font-weight:700;margin-bottom:.5rem}
+.analysis-block .an-row{display:flex;gap:.5rem;margin-bottom:.35rem;font-size:.75rem}
+.analysis-block .an-key{color:var(--dim);min-width:90px;flex-shrink:0;font-family:var(--fm);font-size:.68rem;text-transform:uppercase}
+.analysis-block .an-val{color:var(--ink);flex:1}
+.analysis-block .an-json{margin-top:.6rem;padding:.6rem .7rem;background:var(--bg2);border-radius:4px;font-family:var(--fm);font-size:.68rem;color:#a8d8b0;max-height:200px;overflow-y:auto;word-break:break-word;white-space:pre-wrap}
+.script-view{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.2rem;margin-top:.6rem;font-size:.86rem;line-height:1.7;color:var(--ink);max-height:520px;overflow-y:auto}
+.script-title{font-size:1.05rem;font-weight:500;color:var(--acc);margin-bottom:.35rem}
+.script-logline{font-style:italic;color:var(--dim);margin-bottom:1rem;font-size:.82rem}
+.script-meta{font-size:.72rem;color:var(--faint);font-family:var(--fm);margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px dashed var(--border)}
+.script-scene{margin-bottom:1.1rem;padding-left:.9rem;border-left:3px solid var(--border)}
+.script-scene .sc-head{font-size:.78rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.35rem;display:flex;align-items:center;gap:.4rem}
+.script-scene .sc-line{margin-bottom:.25rem;font-size:.83rem}
+.script-scene .sc-label{display:inline-block;min-width:78px;color:var(--faint);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em}
+.script-scene .sc-dialogue{color:#f0d78a;font-style:italic}
+.script-scene .sc-narration{color:#a8d8c8}
+.script-scene .sc-shots{margin-top:.4rem;padding:.4rem .6rem;background:rgba(255,255,255,.02);border-radius:3px;font-size:.76rem;color:var(--dim);font-family:var(--fm)}
+.script-scene .sc-disclaimer{margin-top:.4rem;padding:.35rem .5rem;background:rgba(212,160,23,.06);border-left:2px solid var(--warn);font-size:.68rem;color:var(--warn);font-style:italic}
+.videos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-top:.8rem}
+.scene-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .3s;display:flex;flex-direction:column}
+.scene-card.generating{border-color:var(--acc)}
+.scene-card.done{border-color:var(--ok)}
+.scene-card.error{border-color:var(--err)}
+.scene-card-header{padding:.55rem .75rem;font-size:.7rem;font-family:var(--fm);color:var(--dim);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);gap:.5rem}
+.scene-card-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:.72rem}
+.scene-card-body{padding:.7rem}
+.scene-card-body video{width:100%;border-radius:2px;background:#000;display:block}
+.scene-placeholder{width:100%;aspect-ratio:16/9;background:#0a0a12;border-radius:2px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:.7rem;font-family:var(--fm);flex-direction:column;gap:.5rem;text-align:center;padding:.5rem}
+.stopmotion-preview{position:relative;width:100%;background:#000;border-radius:2px;overflow:hidden;cursor:pointer;transition:transform .2s}
+.stopmotion-preview:hover{transform:scale(1.01)}
+.stopmotion-preview img{width:100%;height:100%;object-fit:contain;display:block}
+.scene-download{display:block;margin-top:.5rem;font-size:.72rem;color:var(--acc);text-decoration:none;text-align:center;padding:.4rem;border:1px solid var(--border);border-radius:3px;transition:all .2s}
+.scene-download:hover{background:rgba(229,193,90,.08);border-color:var(--acc)}
+.spinner-mini{width:14px;height:14px;border:2px solid rgba(229,193,90,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.player-overlay{position:fixed;inset:0;background:#000;z-index:2000;display:none;align-items:center;justify-content:center;cursor:pointer}
+.player-overlay.visible{display:flex}
+#player-canvas{display:block;max-width:100vw;max-height:100vh;background:#000}
+.player-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:.75rem;font-family:var(--fm);letter-spacing:.15em;text-transform:uppercase;pointer-events:none;opacity:1;transition:opacity .5s;text-align:center;background:rgba(0,0,0,.4);padding:.35rem .8rem;border-radius:3px}
+.player-hint.hidden{opacity:0}
+.player-controls{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem;margin-top:.6rem}
+.player-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem}
+.player-row .btn{margin-bottom:0;flex:1;min-width:140px}
+.voice-toggle{display:flex;align-items:center;gap:.5rem;margin-top:.6rem;font-size:.75rem;color:var(--dim)}
+.voice-toggle input{width:auto;margin:0;accent-color:var(--acc)}
+.status-bar{position:fixed;bottom:230px;left:0;right:0;background:var(--bg3);border-top:1px solid var(--border);color:var(--ink);padding:.75rem 1.1rem;font-size:.78rem;display:flex;align-items:center;gap:.7rem;transform:translateY(200%);transition:transform .35s cubic-bezier(.2,.9,.3,1);z-index:150;font-family:var(--fm);box-shadow:0 -4px 20px rgba(0,0,0,.4)}
+.status-bar.visible{transform:translateY(0)}
+.spinner{width:12px;height:12px;border:2px solid rgba(229,193,90,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+.debug-panel{position:fixed;bottom:0;left:0;right:0;height:220px;background:#05050a;border-top:2px solid var(--acc);z-index:200;display:flex;flex-direction:column;font-family:var(--fm);box-shadow:0 -8px 32px rgba(0,0,0,.7);transition:height .3s ease}
+.debug-panel.collapsed{height:40px}
+.debug-header{display:flex;justify-content:space-between;align-items:center;padding:.4rem .7rem;background:linear-gradient(90deg,#0f0f18,#1a1a28);border-bottom:1px solid var(--border);flex-shrink:0;user-select:none}
+.debug-tabs{display:flex;gap:.25rem}
+.debug-tab{background:transparent;border:1px solid var(--border);color:var(--dim);font-size:.68rem;padding:.35rem .7rem;border-radius:3px;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;font-family:inherit}
+.debug-tab.active{color:var(--acc);border-color:var(--acc);background:rgba(229,193,90,.08)}
+.debug-actions{display:flex;gap:.3rem}
+.debug-actions button{background:transparent;border:1px solid var(--border);color:var(--dim);font-size:.62rem;padding:.28rem .55rem;border-radius:2px;cursor:pointer;font-family:inherit}
+.debug-actions button:hover{color:var(--acc);border-color:var(--acc)}
+.debug-body{flex:1;overflow-y:auto;padding:.6rem .8rem 1rem;font-size:.72rem;line-height:1.5;color:#c8c8d0}
+.debug-body.hidden{display:none}
+.journal-body .j-entry{display:flex;gap:.6rem;padding:.25rem 0;align-items:flex-start;border-bottom:1px dashed rgba(255,255,255,.04);font-size:.78rem;line-height:1.55}
+.journal-body .j-entry:last-child{border-bottom:none}
+.journal-body .j-time{font-family:var(--fm);font-size:.7rem;color:var(--faint);flex-shrink:0;min-width:64px;padding-top:.15rem}
+.journal-body .j-msg{color:#d8d8e0;flex:1;word-break:break-word}
+.journal-body .j-entry.highlight .j-msg{color:var(--acc);font-weight:600}
+.journal-body .j-entry.success .j-msg{color:var(--ok)}
+.journal-body .j-entry.warn .j-msg{color:var(--warn)}
+.journal-body .j-entry.error .j-msg{color:var(--err)}
+.debug-entry{margin-bottom:.3rem;padding:.25rem .4rem;border-left:2px solid transparent;border-radius:2px;word-break:break-word}
+.debug-entry.info{border-left-color:var(--faint)}
+.debug-entry.success{border-left-color:var(--ok);background:rgba(74,157,106,.04)}
+.debug-entry.warn{border-left-color:var(--warn);background:rgba(212,160,23,.04)}
+.debug-entry.error{border-left-color:var(--err);background:rgba(200,90,74,.06);color:#f0a0a0}
+.debug-entry.api{border-left-color:var(--acc)}
+.debug-entry.response{border-left-color:var(--acc2)}
+.debug-time{color:var(--faint);margin-right:.5rem;font-size:.65rem}
+.debug-cat{color:var(--acc);font-weight:600;margin-right:.4rem;font-size:.65rem}
+.debug-msg{color:#d8d8e0}
+.debug-data{margin-top:.3rem;padding:.4rem .5rem;background:#0a0a12;border:1px solid var(--border);border-radius:2px;font-size:.68rem;color:#a8d8b0;max-height:160px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.4}
+.hidden{display:none!important}
+@media(max-width:480px){h1{font-size:1.55rem}.videos-grid{grid-template-columns:1fr}body{padding-bottom:26rem}.debug-panel{height:200px}.status-bar{bottom:210px}.bible-grid{grid-template-columns:repeat(2,1fr)}.location-row{flex-direction:column}}
+</style>
+</head>
+<body>
 
+<header>
+<h1>Cinéma Studio — Actualité Manga</h1>
+<p class="subtitle">Reconstitution manga réaliste · stop-motion inspiré de faits réels</p>
+</header>
+
+<div class="banner">
+<strong>Principe :</strong> sélectionnez une actualité, l'application produit une <span class="hl">scène manga humaine, réaliste et contemporaine</span> inspirée de faits vérifiés. Chaque scène est générée en <span class="hl">stop-motion</span> : 12 images clés sont créées puis animées à 8 images/seconde pour créer un effet de mouvement. Des <span class="hl">personnages humains fictifs</span> (lycéens, étudiants, travailleurs, familles, citoyens) évoluent dans des <span class="hl">lieux reconnaissables de France</span>. Les faits, dates et chiffres sont vérifiés avant génération. Chaque scène est une <span class="hl">reconstitution manga générée par IA</span>, jamais une image documentaire.
+</div>
+
+<div class="panel" id="api-panel">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Clés API Agnes — une par ligne (chaque clé multiplie le débit)</label>
+<textarea id="api-keys-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx&#10;sk-yyyyyyyyyyyyyyyyyyyyyyyy" rows="3" spellcheck="false" autocomplete="off"></textarea>
+<button type="button" class="btn" id="api-save-btn">Enregistrer les clés</button>
+<div class="status" id="api-status-line"><span class="dot"></span><span id="api-status-text">Aucune clé API enregistrée</span></div>
+<div class="keys-list" id="api-keys-status"></div>
+<div class="hint">Clés gratuites sur <a href="https://platform.agnes-ai.com" target="_blank" rel="noopener">platform.agnes-ai.com</a> → Settings → API Keys · N clés = N générations parallèles</div>
+</div>
+
+<div class="section open" id="section-news">
+<div class="section-header" data-toggle="section-news">
+<span class="section-title">📰 1 · Sélectionnez une actualité <span class="badge" id="news-badge">—</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div style="margin-bottom:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Thème des actualités</label>
+<select id="news-category" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="NATION" selected>🇫🇷 France — Actualité nationale</option>
+<option value="WORLD">🌍 International</option>
+<option value="BUSINESS">💼 Économie & social</option>
+<option value="TECHNOLOGY">💻 Technologie</option>
+<option value="SCIENCE">🔬 Science</option>
+<option value="HEALTH">🏥 Santé</option>
+<option value="SPORTS">⚽ Sport</option>
+<option value="ENTERTAINMENT">🎬 Culture</option>
+</select>
+</div>
+<button type="button" class="btn" id="load-news-btn">📡 Charger les actualités</button>
+<div class="news-list" id="news-list"><div style="padding:1.2rem;text-align:center;color:var(--faint);font-size:.8rem;">Cliquez sur « Charger les actualités » pour commencer.</div></div>
+<div class="hint">Cliquez sur un sujet pour le sélectionner. Un seul sujet actif à la fois. Une fois sélectionné, la vérification factuelle se lance automatiquement.</div>
+<div class="analysis-block hidden" id="fact-check-block">
+<div class="an-title">🔍 Vérification factuelle</div>
+<div id="fact-check-content"></div>
+</div>
+</div></div>
+</div>
+
+<div class="section" id="section-references">
+<div class="section-header" data-toggle="section-references">
+<span class="section-title">🎥 2 · Références visuelles (optionnel) <span class="badge" id="ref-badge">0</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="hint" style="margin-bottom:.8rem;color:var(--acc);">
+⚠️ Ces références servent uniquement à <strong>analyser la disposition du lieu, la densité de foule, la lumière, les vêtements observables</strong>. Elles ne servent JAMAIS à cloner un visage ou une voix réelle.
+</div>
+<div class="ref-drop" id="ref-drop">
+<input type="file" accept="image/*" id="ref-file-input">
+<div class="ref-icon">📷</div>
+<div class="ref-text"><strong>Ajoutez une image de référence</strong><br>Capture d'écran, photo de presse autorisée, image de lieu public…</div>
+<div class="ref-hint">L'IA analysera uniquement les éléments observables (architecture, foule, lumière).</div>
+</div>
+<div class="analysis-block hidden" id="reference-analysis-block">
+<div class="an-title">🔍 Analyse de la référence</div>
+<div id="reference-analysis-content"></div>
+</div>
+</div></div>
+</div>
+
+<div class="section open" id="section-characters">
+<div class="section-header" data-toggle="section-characters">
+<span class="section-title">👥 3 · Personnages humains fictifs <span class="badge" id="characters-badge">0 sélectionné(s)</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="hint" style="margin-bottom:.8rem;color:var(--acc);">
+Ces personnages sont <strong>fictifs et originaux</strong>. Ils ne reproduisent jamais exactement le visage d'une personne réelle identifiable.
+</div>
+<div class="bible-grid" id="characters-grid"></div>
+<div class="hint" style="margin-top:.6rem;">Sélectionnez entre 1 et 4 personnages. Leur apparence sera maintenue d'une scène à l'autre (visage, coiffure, vêtements, posture).</div>
+</div></div>
+</div>
+
+<div class="section open" id="section-locations">
+<div class="section-header" data-toggle="section-locations">
+<span class="section-title">📍 4 · Lieu réel <span class="badge" id="locations-badge">Aucun</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="hint" style="margin-bottom:.8rem;">Le lieu sera représenté avec ses caractéristiques reconnaissables (architecture, monuments, mobilier urbain). Aucun décor futuriste ni ville générique à la place d'un lieu réel.</div>
+<div class="location-row" id="locations-grid"></div>
+<div style="margin-top:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Ou décrivez un autre lieu</label>
+<input type="text" id="custom-location" placeholder="Ex : Lycée Victor Hugo, Paris 3e — cour intérieure, façade haussmannienne">
+</div>
+</div></div>
+</div>
+
+<div class="section" id="section-palette">
+<div class="section-header" data-toggle="section-palette">
+<span class="section-title">🎨 5 · Palette visuelle <span class="badge" id="palette-badge">Rose poudré & Menthe</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="hint" style="margin-bottom:.8rem;">La palette est utilisée comme <strong>accent graphique discret</strong>, jamais comme une transformation artificielle. Les lieux réels conservent leurs couleurs naturelles.</div>
+<div id="palette-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem;"></div>
+</div></div>
+</div>
+
+<div class="section" id="section-settings">
+<div class="section-header" data-toggle="section-settings">
+<span class="section-title">⚙️ 6 · Paramètres techniques</span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div style="margin-bottom:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Nombre de scènes</label>
+<select id="scene-count-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="3">3 scènes</option>
+<option value="5" selected>5 scènes</option>
+<option value="8">8 scènes</option>
+<option value="10">10 scènes</option>
+</select>
+</div>
+<div style="margin-bottom:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Images par scène (stop-motion)</label>
+<select id="stopmotion-frames-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="8">8 images — rapide (~12s/scène)</option>
+<option value="12" selected>12 images — équilibré (~20s/scène)</option>
+<option value="16">16 images — fluide (~28s/scène)</option>
+<option value="20">20 images — très fluide (~35s/scène)</option>
+</select>
+</div>
+<div style="margin-bottom:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Vitesse de l'animation (fps)</label>
+<select id="stopmotion-fps-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="4">4 fps — très lent (contemplatif)</option>
+<option value="6">6 fps — lent (poétique)</option>
+<option value="8" selected>8 fps — normal (recommandé)</option>
+<option value="12">12 fps — rapide (nerveux)</option>
+</select>
+</div>
+<div style="margin-bottom:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Format</label>
+<select id="format-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="9:16" selected>9:16 — Vertical (mobile)</option>
+<option value="16:9">16:9 — Paysage (cinéma)</option>
+</select>
+</div>
+<div style="margin-bottom:.8rem;">
+<label style="display:block;font-size:.72rem;color:var(--dim);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;">Intensité narrative</label>
+<select id="intensity-select" style="width:100%;padding:.8rem .95rem;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;">
+<option value="subtle">Subtile — contemplatif, réaliste</option>
+<option value="moderate" selected>Modérée — équilibrée</option>
+<option value="strong">Forte — tension palpable, mouvement</option>
+</select>
+</div>
+</div></div>
+</div>
+
+<div class="launcher">
+<div class="launcher-row" style="display:flex;gap:.7rem;flex-wrap:wrap;">
+<button type="button" class="btn btn-primary" id="launch-btn" style="flex:2;min-width:200px;margin-bottom:0;">▶ Générer la scène</button>
+<button type="button" class="btn btn-stop" id="stop-btn" style="flex:1;min-width:140px;margin-bottom:0;">⏹ Arrêter</button>
+</div>
+</div>
+
+<div class="section hidden" id="section-script">
+<div class="section-header" data-toggle="section-script">
+<span class="section-title">📜 Scénario <span class="badge" id="script-badge">—</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="script-view" id="script-view">Le scénario apparaîtra ici…</div>
+</div></div>
+</div>
+
+<div class="section hidden" id="section-videos">
+<div class="section-header" data-toggle="section-videos">
+<span class="section-title">🎞️ Scènes générées (stop-motion) <span class="badge" id="videos-count">0</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="videos-grid" id="videos-grid"></div>
+</div></div>
+</div>
+
+<div class="section hidden" id="section-player">
+<div class="section-header" data-toggle="section-player">
+<span class="section-title">▶ Lecture séquentielle <span class="badge" id="player-badge">0</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="player-controls">
+<div class="player-row">
+<button type="button" class="btn" id="play-film-btn" disabled>▶ Diffuser la séquence</button>
+<button type="button" class="btn" id="replay-btn" disabled>🔁 Rejouer</button>
+</div>
+<div class="voice-toggle">
+<input type="checkbox" id="voice-toggle" checked>
+<label for="voice-toggle">Narration française (voix du navigateur)</label>
+</div>
+</div>
+<div class="hint">Lecture séquentielle avec sous-titres et narration française. Échap ou clic pour quitter. <strong>Chaque scène est une reconstitution manga en stop-motion générée par IA.</strong></div>
+</div></div>
+</div>
+
+<div class="status-bar" id="status-bar"><div class="spinner"></div><span id="status-text">Préparation…</span></div>
+<div class="toast" id="toast"><span id="toast-icon">✓</span><span id="toast-text">Message</span></div>
+
+<div class="debug-panel" id="debug-panel">
+<div class="debug-header" id="debug-header">
+<div class="debug-tabs">
+<button type="button" class="debug-tab active" data-tab="journal" id="tab-journal">📻 Journal</button>
+<button type="button" class="debug-tab" data-tab="tech" id="tab-tech">🖥️ Technique</button>
+</div>
+<div class="debug-actions">
+<button type="button" id="debug-copy-btn">Copier</button>
+<button type="button" id="debug-clear-btn">Effacer</button>
+<button type="button" id="debug-collapse-btn">−</button>
+</div>
+</div>
+<div class="debug-body journal-body" id="journal-body"></div>
+<div class="debug-body hidden" id="tech-body"></div>
+</div>
+
+<div class="player-overlay" id="player-overlay">
+<canvas id="player-canvas"></canvas>
+<div class="player-hint" id="player-hint-overlay">Échap ou clic pour quitter</div>
+</div>
+<script>
+// ========== CONFIGURATION ==========
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
+const MODEL_TEXT = 'agnes-2.5-flash';
+const MODEL_IMAGE = 'agnes-image-2.1-flash';
+const FRAME_RATE = 24;
+const IMAGE_PARALLEL = 3;
+const IMAGE_INTERVAL_MS = 3400;
+const IMAGE_INTERVAL_MIN = 3200;
+const IMAGE_INTERVAL_MAX = 12000;
+const IMAGE_INTERVAL_SAFE = 4000;
+const STOPMOTION_FRAMES_DEFAULT = 12;
+const STOPMOTION_FPS_DEFAULT = 8;
+const API_KEYS_STORAGE = 'cinema_studio_manga_keys_v2';
+const DEBUG_MAX = 800;
+const GOOGLE_NEWS_RSS = {
+  WORLD: 'https://news.google.com/rss/headlines/section/topic/WORLD?hl=fr&gl=FR&ceid=FR:fr',
+  NATION: 'https://news.google.com/rss/headlines/section/topic/NATION?hl=fr&gl=FR&ceid=FR:fr',
+  BUSINESS: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=fr&gl=FR&ceid=FR:fr',
+  TECHNOLOGY: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=fr&gl=FR&ceid=FR:fr',
+  SCIENCE: 'https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=fr&gl=FR&ceid=FR:fr',
+  HEALTH: 'https://news.google.com/rss/headlines/section/topic/HEALTH?hl=fr&gl=FR&ceid=FR:fr',
+  SPORTS: 'https://news.google.com/rss/headlines/section/topic/SPORTS?hl=fr&gl=FR&ceid=FR:fr',
+  ENTERTAINMENT: 'https://news.google.com/rss/headlines/section/topic/ENTERTAINMENT?hl=fr&gl=FR&ceid=FR:fr'
+};
+const WA_PALETTES = [
+  { id:'pink-mint', label:'Rose poudré & Menthe', colors:['#F4C2C2','#A8D8B9','#E5B95A','#F5F0E1','#7B9FB0'] },
+  { id:'coral-teal', label:'Corail & Turquoise', colors:['#E8A87C','#85CDCA','#F4E4BA','#D4A5A5','#7C6A8B'] },
+  { id:'mustard-blue', label:'Moutarde & Bleu ciel', colors:['#D4A017','#8FB8D8','#F5E6B3','#C97B63','#536B78'] },
+  { id:'lavender-cream', label:'Lavande & Crème', colors:['#B8A9C9','#F2E8CF','#D4A373','#8E9AAF','#E9C46A'] }
+];
+const SYSTEM_PROMPT = `
+Tu es le moteur éditorial et audiovisuel de l'application Cinéma Studio — Actualité Manga.
+Tu crées des scènes manga humaines, réalistes et contemporaines inspirées de faits sociaux, politiques et historiques vérifiables.
+L'application ne produit pas un journal télévisé, ne crée pas de plateau de télévision et ne met pas en scène de présentateur ou de reporter par défaut. Elle raconte des événements à travers des personnages humains fictifs placés dans des situations de la vie réelle.
+Les scènes peuvent représenter : des lycéens, des étudiants, des travailleurs, des familles, des militants, des syndicalistes, des passants, des journalistes présents dans l'espace public, des forces de l'ordre, des responsables d'établissement, des élus ou représentants publics lorsque leur présence est vérifiée.
+Le récit peut montrer une population qui se mobilise contre des décisions gouvernementales, des politiques de centre ou de droite, des restrictions, des inégalités, des violences institutionnelles ou des conditions de vie difficiles. Le point de vue narratif peut être critique, mais il ne doit jamais inventer de faits, de chiffres, de citations ou d'actions attribuées à des personnes réelles.
+Sépare toujours : 1. les faits vérifiables ; 2. les éléments observés dans les vidéos ou photographies de référence ; 3. les personnages fictifs ; 4. les dialogues inventés ; 5. les choix de mise en scène.
+Les personnages humains doivent avoir une apparence crédible, des proportions naturelles, des expressions lisibles et des vêtements contemporains. Ils peuvent être inspirés de caractéristiques générales observées dans des documents publics, mais ne doivent pas reproduire exactement le visage d'une personne réelle identifiable.
+Les lieux réels doivent être représentés avec leurs caractéristiques reconnaissables lorsqu'ils sont mentionnés : architecture, mobilier urbain, monuments, stations, rues, places, signalétique générale, organisation de l'espace.
+Ne transforme jamais un lieu réel en décor futuriste, fantastique ou générique si le lieu est explicitement demandé.
+Ne présente jamais une reconstitution manga comme une vidéo documentaire réelle. Ajoute les informations de reconstitution dans les métadonnées et, si nécessaire, dans le montage.
+Toutes les sorties doivent être en français.
+`;
+const FACT_CHECK_PROMPT = `
+Analyse les sujets d'actualité suivants.
+Pour chaque sujet, retourne uniquement un objet JSON :
+{
+  "titre": "", "resume_factuel": "", "date": "", "lieu": "",
+  "acteurs": [], "chiffres": [], "revendications": [], "actions_observees": [],
+  "sources": [], "niveau_confiance": "élevé|moyen|faible",
+  "elements_a_ne_pas_inventer": [], "elements_fictifs_autorises": [],
+  "type_de_reconstitution": "scène de rue|manifestation|lycée|assemblée|interview fictive|autre"
+}
+Règles :
+- Ne crée aucune information absente des données fournies.
+- Ne crée aucune citation.
+- Ne transforme pas une hypothèse en fait.
+- Signale les informations non confirmées.
+- Si les sources divergent, conserve les chiffres et indique la divergence.
+- Conserve les sources telles qu'elles sont fournies.
+- Sépare les faits, les images de référence, les personnages fictifs et les dialogues.
+- Indique si une vidéo ou une photographie sert uniquement de référence visuelle.
+- Ne déduis pas l'identité d'une personne visible dans une vidéo si elle n'est pas confirmée par une source fiable.
+- Réponds uniquement avec du JSON valide.
+`;
+const REFERENCE_ANALYSIS_PROMPT = `
+Analyse les références visuelles fournies pour préparer une reconstitution manga humaine.
+Retourne uniquement :
+{
+  "type_de_document": "vidéo|photographie|article|capture",
+  "date_si_connue": "", "lieu_si_connu": "",
+  "elements_visuels_confirmables": [], "architecture_et_geographie": [],
+  "organisation_de_la_foule": "", "vetements_et_objets": [], "mouvements_generaux": [],
+  "conditions_lumineuses": "", "elements_non_confirmables": [],
+  "personnes_identifiables": [], "risques_de_ressemblance": [],
+  "recommandations_de_reconstitution": []
+}
+Règles :
+- Décris uniquement ce qui est visible ou explicitement indiqué.
+- Ne déduis pas l'identité d'une personne à partir de son apparence.
+- Ne reproduis pas un visage réel identifiable.
+- Ne crée pas de citation à partir d'un mouvement des lèvres.
+- Ne transforme pas une vidéo de référence en preuve d'un fait qui n'est pas confirmé par une source.
+- Distingue les éléments observés des interprétations.
+- Signale les éléments qui nécessitent une vérification humaine.
+- Réponds uniquement avec du JSON valide.
+`;
+const CHARACTER_BIBLE = {
+  noah: { id:'noah', name:'Noah', age:17, role:'lycéen',
+    appearance:'jeune homme humain de 17 ans, peau mate claire, cheveux noirs légèrement ondulés, yeux bruns, visage fin, silhouette mince',
+    costume:'veste bleu marine, sweat gris clair, pantalon sombre, sac à dos noir',
+    personality:'réfléchi, calme, progressivement engagé',
+    narrative_position:'élève confronté aux difficultés de son établissement',
+    palette:['#243447','#B8B8B8','#1E1E1E'] },
+  maya: { id:'maya', name:'Maya', age:16, role:'lycéenne et témoin',
+    appearance:'jeune femme humaine de 16 ans, peau brune, cheveux châtains foncés attachés en queue-de-cheval, yeux noisette, visage expressif',
+    costume:'veste bordeaux, haut noir, jean sombre, sac à dos gris',
+    personality:'déterminée, attentive, sensible aux injustices',
+    narrative_position:'élève qui documente les événements avec son téléphone',
+    palette:['#7A263A','#1E1E1E','#777777'] },
+  yanis: { id:'yanis', name:'Yanis', age:18, role:'lycéen majeur',
+    appearance:'jeune homme humain de 18 ans, peau brune, cheveux bruns courts et bouclés, yeux marron, carrure moyenne',
+    costume:'bomber vert foncé, t-shirt noir, pantalon cargo sombre, sac à dos noir',
+    personality:'prudent, méfiant, attentif aux risques',
+    narrative_position:'élève qui craint les conséquences de la mobilisation',
+    palette:['#294936','#1E1E1E','#3A3A3A'] },
+  ines: { id:'ines', name:'Inès', age:22, role:'étudiante et militante',
+    appearance:'jeune femme humaine de 22 ans, peau claire, cheveux noirs courts, yeux bruns, visage anguleux',
+    costume:'manteau beige, pull rouge sombre, pantalon noir, écharpe grise',
+    personality:'organisée, combative, attentive aux autres',
+    narrative_position:'jeune adulte engagée dans une mobilisation collective',
+    palette:['#B9A58A','#7B263A','#333333'] },
+  samir: { id:'samir', name:'Samir', age:35, role:'travailleur et parent',
+    appearance:'homme humain de 35 ans, peau brune, cheveux noirs courts, barbe courte, regard fatigué',
+    costume:'veste de travail sombre, pull gris, pantalon de travail, chaussures usées',
+    personality:'pragmatique, solidaire, préoccupé par les conditions de vie',
+    narrative_position:'adulte qui rejoint la mobilisation par solidarité et expérience personnelle',
+    palette:['#3B4652','#8A8A8A','#252525'] },
+  claire: { id:'claire', name:'Claire', age:42, role:'enseignante',
+    appearance:'femme humaine de 42 ans, peau claire, cheveux châtains attachés, lunettes fines, expression concentrée',
+    costume:'manteau gris, pull bleu sombre, écharpe beige, sac en toile',
+    personality:'pédagogue, épuisée, solidaire de ses élèves',
+    narrative_position:'enseignante confrontée au manque de moyens et aux classes surchargées',
+    palette:['#5B6573','#D8CBB8','#2F3E50'] },
+  police_officer: { id:'police-officer', name:'Agent', age:35, role:'membre fictif des forces de l’ordre',
+    appearance:'adulte humain, visage non identifiable, casque et équipement génériques, posture professionnelle',
+    costume:'équipement contemporain générique sans insigne lisible ni unité identifiable',
+    personality:'tendu, discipliné, silencieux',
+    narrative_position:'personnage représentant une présence institutionnelle, sans être associé à une personne réelle',
+    palette:['#30343B','#59616B','#1D1F22'] }
+};
+const LOCATION_BIBLE = {
+  bastille: { id:'bastille', name:'Place de la Bastille, Paris',
+    description:'Place de la Bastille à Paris, avec la colonne de Juillet au centre, les façades parisiennes autour de la place, les rues qui convergent (rue de la Roquette, rue de Lappe, boulevard Richard-Lenoir, boulevard Diderot), les feux de circulation, les terrasses et commerces contemporains, les barrières métalliques et le mobilier urbain.',
+    landmarks:['colonne de Juillet','façades haussmanniennes','rues convergentes','feux de circulation','terrasses','barrières métalliques','Opéra Bastille'] },
+  lycee: { id:'lycee', name:'Lycée parisien',
+    description:'Cour intérieure d’un lycée parisien, façade haussmannienne, préau, grilles en fer forgé, bancs, grandes fenêtres à petits carreaux, escaliers en pierre.',
+    landmarks:['cour intérieure','préau','grilles en fer forgé','façade haussmannienne','grandes fenêtres'] },
+  rue_parisienne: { id:'rue_parisienne', name:'Rue parisienne',
+    description:'Rue parisienne contemporaine, immeubles haussmanniens, commerces en rez-de-chaussée, trottoirs en pierre, lampadaires, panneaux de signalisation, voitures stationnées.',
+    landmarks:['immeubles haussmanniens','commerces','trottoirs en pierre','lampadaires'] },
+  place_republique: { id:'place_republique', name:'Place de la République, Paris',
+    description:'Place de la République, monument central au centre, statue de Marianne, grandes avenues convergentes, fontaine, mobilier urbain contemporain.',
+    landmarks:['monument central','statue de Marianne','fontaine','grandes avenues'] },
+  metro: { id:'metro', name:'Station de métro parisienne',
+    description:'Station de métro parisienne, entrée Guimard, escaliers mécaniques, carrelage blanc, panneaux lumineux, tourniquets, affiches publicitaires.',
+    landmarks:['entrée Guimard','escaliers mécaniques','carrelage blanc','panneaux lumineux'] },
+  assemblee: { id:'assemblee', name:'Salle d’assemblée',
+    description:'Salle contemporaine d’assemblée publique, chaises alignées, micros sur perches, banderoles, panneaux syndicaux, grandes fenêtres latérales.',
+    landmarks:['chaises alignées','micros sur perches','banderoles','panneaux syndicaux'] }
+};
+const VISUAL_BIBLE = `
+STYLE VISUEL PERMANENT :
+Manga contemporain humain, semi-réaliste, cinématographique et ancré dans la France actuelle.
+Les personnages ont une apparence humaine crédible : proportions naturelles, visages expressifs, mains et gestes réalistes, vêtements contemporains, coiffures cohérentes, diversité de carnations, d'âges et de morphologies, aucune apparence animale, aucun style futuriste, aucun décor fantastique.
+Le rendu doit ressembler à une adaptation manga réaliste d'une scène de vie actuelle, et non à un journal télévisé.
+Les lieux doivent être représentés avec fidélité lorsqu'ils sont connus : rues réelles, places publiques, stations de métro, lycées, façades, monuments, mobilier urbain, barrières, panneaux génériques, architecture parisienne ou française contemporaine.
+Lorsqu'une scène se déroule à la Bastille, représenter des éléments reconnaissables de la place de la Bastille à Paris : la colonne de Juillet, la forme générale de la place, les rues qui convergent autour du monument, les façades parisiennes, les terrasses et commerces contemporains, les feux de circulation, les barrières et le mobilier urbain, la circulation et l'organisation réelle de l'espace.
+Ne pas remplacer la Bastille par une place générique, une ville futuriste ou un décor imaginaire.
+Palette : couleurs naturelles et légèrement désaturées, bleu acier, gris urbain, beige, brun, rouge sombre et touches de jaune, accents pastel discrets, conserver les couleurs réelles des lieux, ne pas appliquer une palette artificielle qui rendrait le décor irréaliste.
+Éclairage : lumière naturelle, ciel couvert ou lumière de fin de journée selon la source, ombres cohérentes, reflets réalistes, profondeur de champ modérée, grain cinématographique discret.
+Caméra : plans larges pour situer le lieu, plans moyens pour les interactions, gros plans pour les émotions, mouvements fluides, caméra portée contrôlée lorsque la scène est tendue, aucun mouvement spectaculaire sans justification.
+Les scènes de mobilisation doivent montrer une foule crédible : densité variable, mouvements non synchronisés, personnes de différents âges, vêtements variés, distances réalistes, pancartes lisibles uniquement si leur texte est fourni et vérifié, aucun slogan inventé attribué à une organisation réelle.
+Les scènes avec les forces de l'ordre doivent rester contextualisées : ne pas créer de violence gratuite, ne pas inventer de blessure, ne pas attribuer une action précise à un agent identifiable, représenter les tensions, les distances, les ordres et les mouvements uniquement lorsqu'ils sont documentés.
+FORMAT : vidéo verticale 9:16, cadrage adapté au téléphone, visages lisibles, espace libre en haut et en bas pour les sous-titres, texte ajouté au montage plutôt que généré dans l'image.
+À ÉVITER : photoréalisme trompeur, visage d'une personne réelle identifiable, clonage facial, imitation de voix réelle, futurisme, science-fiction, architecture inventée, décor générique à la place d'un lieu réel, changement de visage, changement de coiffure, changement de vêtements sans justification, mains déformées, membres supplémentaires, yeux asymétriques, scintillement, caméra instable, logos inventés, fausses citations, fausses statistiques et violence graphique.
+`;
+const SCRIPT_PROMPT = `
+Génère le scénario complet d'une séquence manga réaliste inspirée d'un événement réel.
+La séquence doit : 1. commencer par un lieu identifiable ; 2. présenter les personnages humains dans une situation concrète ; 3. montrer une action ou une interaction crédible ; 4. faire comprendre le contexte social ou politique sans exposition artificielle ; 5. intégrer les faits vérifiés dans la narration ou les sous-titres ; 6. distinguer les dialogues fictifs des déclarations réelles ; 7. se terminer par une évolution narrative ou une question ouverte.
+Ne crée pas de plateau de télévision. Ne crée pas de présentateur. Ne crée pas de reporter animalier. Ne transforme pas la scène en commentaire de JT.
+Pour chaque séquence, retourne : { "id":"", "type":"scene_de_rue|lycee|manifestation|assemblee|transport|famille|intervention|autre", "location_name":"", "location_description":"", "characters":[], "subject_id":"", "fact_summary":"", "reference_summary":"", "fictional_setup":"", "dialogue":"", "narration":"", "visual_description":"", "camera":"", "duration_seconds":8, "continuity_start":"", "continuity_end":"", "sources":[], "disclaimer":"Reconstitution manga fictive inspirée de faits réels et générée par IA" }
+Règles : ne fabrique aucun fait, chiffre ou citation. Ne présente pas les personnages fictifs comme des témoins réels. Ne reproduis pas le visage d'une personne réelle. Ne transforme pas une vidéo de référence en preuve d'un fait non confirmé. Sépare le résumé factuel de la mise en scène. Garde les dialogues assez courts pour 8 secondes. Décris des scènes réalisables par un modèle vidéo. Conserve l'apparence des personnages. Décris précisément les lieux réels. Si le lieu est Paris, indique les éléments architecturaux reconnaissables. Si la scène se déroule à la Bastille, mentionne la colonne de Juillet et la configuration de la place. Réponds uniquement avec un JSON valide.
+`;
+const CONTINUITY_PROMPT = `
+Analyse la scène précédente et prépare la suivante.
+Retourne uniquement : { "last_frame_description":"", "character_positions":"", "character_expressions":"", "costumes_and_accessories":"", "background_elements":"", "location_landmarks":"", "lighting":"", "camera_position":"", "action_in_progress":"", "next_scene_start":"", "continuity_warnings":[] }
+Règles : ne change pas l'identité, le visage, la carnation, la coiffure, les vêtements ou les accessoires. Décris précisément la position de chaque personnage. Conserve les éléments reconnaissables du lieu. Si la scène se déroule à la Bastille, conserve la colonne de Juillet, la géométrie de la place et les façades environnantes. Signale toute incohérence. Indique si l'image de fin est inexploitable. Ne prétends pas garantir une continuité parfaite. Ne transforme pas un lieu réel en décor générique ou futuriste.
+`;
+const VOICEOVER_PROMPT = `
+Transforme le contenu suivant en une narration française courte, claire et contextualisée.
+Contraintes : durée maximale 8 secondes, une ou deux phrases, vocabulaire compréhensible, aucune citation ou donnée inventée, ne pas présenter une reconstitution comme une image réelle, préciser "reconstitution manga" ou "selon les sources disponibles" lorsque nécessaire, ne pas imiter la voix d'une personne réelle, ne pas utiliser de slogan partisan, ne pas transformer la narration en présentation de journal télévisé, décrire le contexte de la scène sans surinterpréter les intentions des personnes.
+Retourne uniquement le texte final à lire.
+`;
+const QUALITY_CHECK_PROMPT = `
+Contrôle la scène manga générée.
+Retourne uniquement : { "valid":true, "problems":[], "character_consistency":"ok|warning|error", "location_accuracy":"ok|warning|error", "visual_quality":"ok|warning|error", "fact_safety":"ok|warning|error", "real_person_resemblance":"ok|warning|error", "continuity":"ok|warning|error", "recommended_action":"publier|réviser|régénérer" }
+Vérifie : personnages humains attendus ; visage, carnation, coiffure, vêtements et accessoires ; absence de ressemblance excessive avec une personne réelle ; absence de clonage facial ; absence d'imitation de voix réelle ; lieu conforme à la description ; présence des éléments reconnaissables du lieu ; absence de décor futuriste ; absence de plateau de télévision ; absence de présentateur ou de reporter non demandé ; absence de texte illisible ; absence de fausse citation ou statistique ; cohérence avec la scène précédente ; lisibilité de l'action ; stabilité de la caméra ; absence de déformation importante ; absence de violence inventée ou de blessure non documentée.
+Si un problème est visible, ne valide pas automatiquement la scène.
+`;
+const MOTION_PHRASES = [
+  'very subtle camera drift to the right, subject breathing slowly, hair gently moving',
+  'slight camera push-in, subject turns head slightly, subtle movement of clothing',
+  'camera drifts left, subject shifts weight, hair moves in a breeze',
+  'camera slowly rotates around the subject, gentle body sway, ambient movement',
+  'slow dolly forward, subject leans slightly forward, natural micro-movements',
+  'camera moves slightly upward, subject straightens posture, hair lifting',
+  'camera tracks slowly right, subject gestures with hand, clothing flutter',
+  'subtle parallax movement, background elements shift, subject breathing deeply',
+  'camera pulls back slightly, subject stands still, ambient wind movement',
+  'camera drifts down, subject looks downward slowly, natural head motion',
+  'slow camera rotation, subject turns slightly toward the viewer, hair sway',
+  'gentle camera push, subject settles into final pose, breathing continues',
+  'camera drifts right, subject looks to the side, subtle head turn',
+  'camera pushes in slightly, subject blinks slowly, natural facial motion',
+  'camera drifts left, subject shifts foot position, hair moves in gentle breeze',
+  'camera pans slowly, subject breathes in, chest rising, clothes flutter',
+  'camera rotates gently, subject turns body slightly, ambient dust particles',
+  'slow dolly, subject leans back, natural posture shift, hair sway',
+  'camera rises slightly, subject looks up, subtle jaw movement',
+  'camera settles, subject breathes out, shoulders drop, natural micro-motion'
+];
+
+const state = {
+  keyPool: [], newsItems: [], selectedNews: null, factCheck: null,
+  referenceImage: null, referenceAnalysis: null,
+  selectedCharacters: new Set(), selectedLocation: null, selectedPalette: 'pink-mint',
+  script: null, scenes: [], sceneCount: 5, durationFrames: 145,
+  stopMotionFrames: 12, stopMotionFps: 8,
+  format: '9:16', intensity: 'moderate',
+  isRunning: false, stopRequested: false,
+  isPlayingFilm: false, playRAF: null,
+  voiceEnabled: true, currentUtterance: null,
+  workingPollUrlBuilder: null, episodeId: 'episode-' + Date.now(),
+  workingPollUrlBuilderSet: false
+};
+
+// ========== UTILITAIRES ==========
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour12:false})}
+function setStatus(text){const bar=document.getElementById('status-bar');const txt=document.getElementById('status-text');if(!bar||!txt)return;if(text){bar.classList.add('visible');txt.textContent=text}else bar.classList.remove('visible')}
+let toastTimeout=null;
+function showToast(message,type='success',duration=2800){const t=document.getElementById('toast');const i=document.getElementById('toast-icon');const x=document.getElementById('toast-text');if(!t||!i||!x)return;t.classList.remove('visible','success','error','warn');void t.offsetWidth;const icons={success:'✓',error:'✕',warn:'⚠'};i.textContent=icons[type]||'✓';x.textContent=message;t.classList.add(type);requestAnimationFrame(()=>t.classList.add('visible'));if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('visible'),duration)}
+function sanitizeForApi(text){if(text==null)return '';return String(text).replace(/[\u2018\u2019\u201B\u2032\u02BC]/g,"'").replace(/[\u201C\u201D\u201F\u2033]/g,'"').replace(/\u2013/g,'-').replace(/\u2014/g,'--').replace(/\u2026/g,'...').replace(/[\u200B-\u200D\uFEFF]/g,'').replace(/\u00A0/g,' ').replace(/\u202F/g,' ')}
+function countWords(str){if(!str)return 0;return String(str).trim().split(/\s+/).filter(Boolean).length}
+
+// ========== JOURNAL NARRATIF ==========
+function journalLog(msg,level){level=level||'info';const body=document.getElementById('journal-body');if(!body)return;const icons={info:'·',highlight:'▶',success:'✅',warn:'⚠️',error:'❌',news:'📡',script:'✍️',video:'🎥',play:'🎬',key:'🔑',voice:'🔊'};const icon=icons[level]||'·';const entry=document.createElement('div');entry.className='j-entry '+level;entry.innerHTML='<span class="j-time">'+esc(nowTime())+'</span><span class="j-icon">'+icon+'</span><span class="j-msg">'+esc(msg)+'</span>';body.appendChild(entry);body.scrollTop=body.scrollHeight;while(body.children.length>DEBUG_MAX)body.removeChild(body.firstChild)}
+
+// ========== DEBUG TECHNIQUE ==========
+let debugCount=0,debugEntries=[],debugCollapsed=false,currentTab='journal';
+function debugLog(level,category,message,data){const body=document.getElementById('tech-body');if(!body)return;const time=nowTime();const entry=document.createElement('div');entry.className='debug-entry '+level;let html='<span class="debug-time">'+time+'</span><span class="debug-cat">['+esc(category)+']</span><span class="debug-msg">'+esc(message)+'</span>';if(data!==undefined&&data!==null){let ds;if(typeof data==='string')ds=data;else{try{ds=JSON.stringify(data,null,2)}catch(e){ds=String(data)}}if(ds.length>3000)ds=ds.slice(0,3000)+'\n…[tronqué]';html+='<pre class="debug-data">'+esc(ds)+'</pre>'}entry.innerHTML=html;body.appendChild(entry);debugEntries.push({time,level,category,message});if(debugEntries.length>DEBUG_MAX)debugEntries.shift();while(body.children.length>DEBUG_MAX)body.removeChild(body.firstChild);body.scrollTop=body.scrollHeight;debugCount++}
+function clearDebug(){const b=document.getElementById('tech-body');const j=document.getElementById('journal-body');if(b)b.innerHTML='';if(j)j.innerHTML='';debugEntries=[];debugCount=0}
+function copyDebug(){const lines=debugEntries.map(e=>e.time+' ['+e.category+'] '+e.message).join('\n');const finish=(ok)=>showToast(ok?'Console copiée':'Copie impossible',ok?'success':'error');try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(lines).then(()=>finish(true)).catch(()=>legacyCopy(lines,finish));return}}catch(e){}legacyCopy(lines,finish)}
+function legacyCopy(text,cb){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);cb(ok)}
+function toggleDebugCollapse(){const p=document.getElementById('debug-panel');const b=document.getElementById('debug-collapse-btn');if(!p||!b)return;debugCollapsed=!debugCollapsed;p.classList.toggle('collapsed',debugCollapsed);b.textContent=debugCollapsed?'+':'−'}
+function switchTab(tab){currentTab=tab;const j=document.getElementById('journal-body');const t=document.getElementById('tech-body');const tj=document.getElementById('tab-journal');const tt=document.getElementById('tab-tech');if(!j||!t)return;if(tab==='journal'){j.classList.remove('hidden');t.classList.add('hidden');tj.classList.add('active');tt.classList.remove('active')}else{t.classList.remove('hidden');j.classList.add('hidden');tt.classList.add('active');tj.classList.remove('active');t.scrollTop=t.scrollHeight}}
+function userIsReadingConsole(){const sy=window.scrollY,vh=window.innerHeight,dh=document.documentElement.scrollHeight;return(sy+vh)>=dh-260}
+function scrollToSection(id){if(userIsReadingConsole())return;const el=document.getElementById(id);if(!el||el.classList.contains('hidden'))return;setTimeout(()=>{if(userIsReadingConsole())return;const y=el.getBoundingClientRect().top+window.scrollY-40;window.scrollTo({top:y,behavior:'smooth'})},200)}
+function revealSection(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('hidden');el.classList.add('open');scrollToSection(id)}
+
+// ========== BUILDERS DE PROMPTS ==========
+function buildSystemPrompt(){return SYSTEM_PROMPT+'\n\n'+VISUAL_BIBLE}
+function buildFactCheckPrompt(subjects){const list=subjects.map((s,i)=>'['+(i+1)+'] « '+s.title+' »'+(s.source?' — Source : '+s.source:'')+(s.pubDate?' — Date : '+s.pubDate:'')+(s.link?'\n    Lien : '+s.link:'')).join('\n\n');return['Sujets d\u2019actualité à analyser :','',list,'',FACT_CHECK_PROMPT].join('\n')}
+function buildReferenceAnalysisPrompt(imageContext){return['Contexte fourni par l\u2019utilisateur :',imageContext||'(aucun)','',REFERENCE_ANALYSIS_PROMPT].join('\n')}
+function buildScriptPrompt(input){
+  const charactersList=Array.from(state.selectedCharacters).map(id=>CHARACTER_BIBLE[id]).filter(Boolean);
+  const location=state.selectedLocation?LOCATION_BIBLE[state.selectedLocation]:null;
+  const palette=WA_PALETTES.find(p=>p.id===state.selectedPalette);
+  return ['Contexte d\u2019écriture :','','VÉRIFICATION FACTUELLE :',JSON.stringify(input.fact_check||{},null,2),'','ANALYSE DES RÉFÉRENCES VISUELLES :',JSON.stringify(input.reference_analysis||{},null,2),'','PERSONNAGES FICTIFS SÉLECTIONNÉS (à utiliser OBLIGATOIREMENT) :',JSON.stringify(charactersList,null,2),'','LIEU RÉEL :',JSON.stringify(location||{},null,2),'','PALETTE VISUELLE (accents discrets uniquement) :',JSON.stringify(palette||{},null,2),'','PARAMÈTRES :','- Nombre de scènes : '+state.sceneCount,'- Durée par scène : '+Math.round(state.durationFrames/24)+' secondes','- Format : '+state.format,'- Intensité narrative : '+state.intensity,'',SCRIPT_PROMPT,'','FORMAT DE SORTIE (retourne UNIQUEMENT ce JSON) :','{','  "title": "titre de la séquence",','  "logline": "résumé en une phrase",','  "location_name": "'+(location?location.name:'')+'",','  "location_description": "'+(location?location.description.replace(/"/g,'\\"'):'')+'",','  "characters": ['+charactersList.map(c=>'"'+c.id+'"').join(', ')+'],','  "scenes": [','    { "id":"scene-001", "type":"scene_de_rue|lycee|manifestation|assemblee|transport|famille|intervention", "location_name":"", "location_description":"", "characters":[], "fact_summary":"", "reference_summary":"", "fictional_setup":"", "dialogue":"dialogue fictif court (max 12 mots)", "narration":"narration française courte (max 20 mots)", "visual_description":"description visuelle détaillée de la scène", "camera":"description du mouvement de caméra", "duration_seconds":'+Math.round(state.durationFrames/24)+', "continuity_start":"", "continuity_end":"", "sources":[], "disclaimer":"Reconstitution manga fictive inspirée de faits réels et générée par IA" }','    ... exactement '+state.sceneCount+' scènes ...','  ]','}'].join('\n');
+}
+function buildAnchorImagePrompt(scene){
+  const characters=(scene.characters||[]).map(id=>CHARACTER_BIBLE[id]).filter(Boolean);
+  return [buildSystemPrompt(),'','IMAGE D\'ANCRAGE — PREMIÈRE IMAGE DE LA SÉQUENCE STOP-MOTION.','','PERSONNAGES :',JSON.stringify(characters,null,2),'','LIEU :',scene.location_name||'','','DESCRIPTION DU LIEU :',scene.location_description||'','','SCÈNE :',scene.visual_description||'','','FAITS ASSOCIÉS :',scene.fact_summary||'','','RÉFÉRENCE VISUELLE :',scene.reference_summary||'','','MISE EN SCÈNE :',scene.camera||'Plan moyen réaliste, caméra stable.','','CONSIGNES :','- image verticale 9:16 ;','- apparence humaine crédible ;','- visages fictifs, coiffures, carnations, morphologies, vêtements et accessoires précis ;','- représenter fidèlement le lieu demandé ;','- si le lieu est la Bastille, montrer la colonne de Juillet et la place parisienne réelle ;','- aucune personne réelle identifiable ;','- aucun texte inventé dans l\u2019image ;','- zone libre pour les sous-titres ;','- action principale clairement visible.','','Cette image servira de base pour créer une séquence de ' + state.stopMotionFrames + ' images légèrement différentes (stop-motion).'].join('\n');
+}
+function buildStopMotionPrompt(scene,motionPhrase,frameIdx,totalFrames){
+  const characters=(scene.characters||[]).map(id=>CHARACTER_BIBLE[id]).filter(Boolean);
+  const progress=frameIdx/(totalFrames-1);
+  return [buildSystemPrompt(),'','STOP-MOTION FRAME '+(frameIdx+1)+' OF '+totalFrames,'Cette image est la frame '+(frameIdx+1)+' d\'une séquence de '+totalFrames+' images qui formeront une animation de '+(totalFrames/state.stopMotionFps).toFixed(1)+' secondes.','La séquence sera jouée à '+state.stopMotionFps+' images par seconde.','','SCÈNE IDENTIQUE AUX AUTRES FRAMES — GARDER TOUT IDENTIQUE :','- même lieu : '+(scene.location_name||''),'- mêmes personnages : '+characters.map(c=>c.name).join(', '),'- mêmes vêtements, mêmes visages, même composition, même cadrage, même lumière','','PERSONNAGES (FICTIFS — IDENTIQUES DANS TOUTES LES IMAGES) :',JSON.stringify(characters,null,2),'','LIEU (IDENTIQUE DANS TOUTES LES IMAGES) :',scene.location_name||'',scene.location_description||'','','SCÈNE ORIGINALE :',scene.visual_description||'','','MOUVEMENT DE CETTE IMAGE (frame '+(frameIdx+1)+'/'+totalFrames+') :',motionPhrase,'','PROGRESSION DU MOUVEMENT : '+Math.round(progress*100)+'% de la séquence.',progress<0.2?'Début du mouvement — position de départ.':progress<0.8?'Mouvement en cours — position intermédiaire.':'Fin du mouvement — position d\'arrivée.','','CONSIGNES ABSOLUES :','- apparence humaine crédible','- visage, coiffure, carnation, morphologie, vêtements, accessoires IDENTIQUES à l\'image d\'ancrage','- lieu réel reconnaissable','- composition et cadrage IDENTIQUES','- lumière IDENTIQUE','- le mouvement doit être SUBTIL (micro-déplacements, respiration, vent léger)','- un seul mouvement subtil par image','- ne pas changer la scène, seulement un léger décalage','- aucun texte dans l\'image','- aucune personne réelle identifiable','','STYLE :','Manga humain semi-réaliste, cinématographique, grain 35mm discret, palette naturelle légèrement désaturée, lumière naturelle.','','FORMAT : '+(state.format||'9:16')+' vertical, haute qualité.'].join('\n');
+}
+function pickMotionPhrase(frameIdx,totalFrames,scene){
+  const progress=frameIdx/(totalFrames-1);
+  const offset=(scene&&scene.type?scene.type.length:0);
+  const idx=Math.floor(progress*(MOTION_PHRASES.length-1)+offset)%MOTION_PHRASES.length;
+  return MOTION_PHRASES[idx];
+}
+
+// ========== PARSER JSON ==========
+function balanceJson(text){let ob=0,ok=0,inString=false,escape=false;for(let i=0;i<text.length;i++){const ch=text[i];if(escape){escape=false;continue}if(ch==='\\'){escape=true;continue}if(ch==='"'){inString=!inString;continue}if(inString)continue;if(ch==='{')ob++;else if(ch==='}')ob--;else if(ch==='[')ok++;else if(ch===']')ok--}let r=text;if(inString)r+='"';while(ok>0){r+=']';ok--}while(ob>0){r+='}';ob--}return r}
+function fixUnquotedKeys(text){let out='';let i=0;const n=text.length;let inString=false;let escape=false;const stack=[];let lastStructural='{';while(i<n){const ch=text[i];if(escape){out+=ch;escape=false;i++;continue}if(ch==='\\'){out+=ch;escape=true;i++;continue}if(inString){out+=ch;if(ch==='"')inString=false;i++;continue}if(ch==='"'){inString=true;out+=ch;i++;continue}if(ch==='{'){stack.push('{');lastStructural='{';out+=ch;i++;continue}if(ch==='['){stack.push('[');lastStructural='[';out+=ch;i++;continue}if(ch==='}'){if(stack.length)stack.pop();lastStructural='}';out+=ch;i++;continue}if(ch===']'){if(stack.length)stack.pop();lastStructural=']';out+=ch;i++;continue}if(ch===','){lastStructural=',';out+=ch;i++;continue}if(ch===':'){lastStructural=':';out+=ch;i++;continue}if(/\s/.test(ch)){out+=ch;i++;continue}const top=stack[stack.length-1];if((lastStructural==='{'||lastStructural===',')&&top==='{'&&/[A-Za-z_$]/.test(ch)){let j=i;while(j<n&&/[A-Za-z0-9_$]/.test(text[j]))j++;let k=j;while(k<n&&/\s/.test(text[k]))k++;if(text[k]===':'){out+='"'+text.slice(i,j)+'"';i=j;continue}}out+=ch;i++}return out}
+function fixMissingCommas(text){let out='';let i=0;const n=text.length;let inString=false;let escape=false;let justClosedValue=false;while(i<n){const ch=text[i];if(escape){out+=ch;escape=false;i++;continue}if(ch==='\\'){out+=ch;escape=true;i++;continue}if(inString){out+=ch;if(ch==='"'){inString=false;let j=i+1;while(j<n&&/\s/.test(text[j]))j++;justClosedValue=(text[j]!==':')}i++;continue}if(/\s/.test(ch)){out+=ch;i++;continue}if(justClosedValue&&ch!==','&&ch!=='}'&&ch!==']'&&ch!==':'){out+=',';justClosedValue=false}if(ch==='"'){inString=true;justClosedValue=false;out+=ch;i++;continue}if(ch==='{'){justClosedValue=false;out+=ch;i++;continue}if(ch==='['){justClosedValue=false;out+=ch;i++;continue}if(ch==='}'){justClosedValue=true;out+=ch;i++;continue}if(ch===']'){justClosedValue=true;out+=ch;i++;continue}if(ch===','){justClosedValue=false;out+=ch;i++;continue}if(ch===':'){justClosedValue=false;out+=ch;i++;continue}justClosedValue=false;out+=ch;i++}return out}
+function repairJson(text){
+  if(!text)return null;
+  let c=String(text).trim();
+  const fm=c.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if(fm)c=fm[1].trim();
+  const fb=c.indexOf('{');if(fb<0)return null;
+  c=c.slice(fb);const lb=c.lastIndexOf('}');if(lb>0)c=c.slice(0,lb+1);
+  let out='';let inString=false;let strDelim='"';let escape=false;
+  for(let i=0;i<c.length;i++){
+    const ch=c[i];
+    if(escape){if('"\\/bfnrtu'.includes(ch)){out+='\\'+ch}else{out+=ch}escape=false;continue}
+    if(ch==='\\'){escape=true;continue}
+    if(ch==='"'||ch==="'"){if(!inString){inString=true;strDelim=ch;out+='"';continue}if(ch===strDelim){inString=false;out+='"';continue}if(ch==='"'){out+='\\"';continue}out+="'";continue}
+    if(inString){if(ch==='\n'){out+='\\n';continue}if(ch==='\r'){out+='\\r';continue}if(ch==='\t'){out+='\\t';continue}const code=ch.charCodeAt(0);if(code<32){out+='\\u'+code.toString(16).padStart(4,'0');continue}}
+    out+=ch;
+  }
+  if(escape)out+='\\';if(inString)out+='"';
+  try{out=fixUnquotedKeys(out)}catch(e){}
+  try{out=fixMissingCommas(out)}catch(e){}
+  out=out.replace(/,\s*([}\]])/g,'$1');
+  return out;
+}
+function extractJson(text){if(!text)return null;const repaired=repairJson(text);if(!repaired){debugLog('error','PARSE','Aucun { trouvé');return null}try{return JSON.parse(repaired)}catch(e1){debugLog('warn','PARSE','S1 échouée : '+e1.message);try{return JSON.parse(balanceJson(repaired))}catch(e2){debugLog('error','PARSE','S2 échouée : '+e2.message);debugLog('error','PARSE','Aperçu',repaired.slice(0,2000));return null}}}
+
+// ========== POOL MULTI-CLÉS ==========
+function getStoredKeys(){try{const raw=localStorage.getItem(API_KEYS_STORAGE);if(!raw)return[];const arr=JSON.parse(raw);if(!Array.isArray(arr))return[];return arr.filter(k=>typeof k==='string'&&k.trim().length>0)}catch(e){return[]}}
+function setStoredKeys(keys){try{localStorage.setItem(API_KEYS_STORAGE,JSON.stringify(keys))}catch(e){}}
+function refreshKeyPool(){const stored=getStoredKeys();const old=state.keyPool||[];state.keyPool=stored.map(k=>{const existing=old.find(p=>p.key===k);return existing||{key:k,lastUsed:0,cooldownUntil:0,active:true,errorCount:0}})}
+function hasActiveKey(){return state.keyPool.some(k=>k.active)}
+function getReadyKey(){const now=Date.now();const active=state.keyPool.filter(k=>k.active);if(active.length===0)return{key:null,waitMs:0};const ready=active.filter(k=>!k.cooldownUntil||k.cooldownUntil<=now);if(ready.length===0){const soonest=active.reduce((a,b)=>(a.cooldownUntil||0)<(b.cooldownUntil||0)?a:b);return{key:null,waitMs:Math.max(1000,(soonest.cooldownUntil||0)-now)}}ready.sort((a,b)=>(a.lastUsed||0)-(b.lastUsed||0));return{key:ready[0],waitMs:0}}
+async function acquireKey(label){while(true){if(state.stopRequested)throw new Error('Arrêt demandé');const{key,waitMs}=getReadyKey();if(key){key.lastUsed=Date.now();return key}if(waitMs===0)throw new Error('Aucune clé API active');debugLog('warn',label,'Toutes les clés en cooldown — attente '+Math.round(waitMs/1000)+'s');setStatus('Toutes les clés en cooldown — attente '+Math.round(waitMs/1000)+'s');await sleep(waitMs)}}
+function renderKeysStatus(){const el=document.getElementById('api-keys-status');if(!el)return;if(state.keyPool.length===0){el.innerHTML='';return}const now=Date.now();el.innerHTML=state.keyPool.map((k,i)=>{let stateHtml='<span class="key-state">Active</span>';if(!k.active)stateHtml='<span class="key-state dead">Inactive</span>';else if(k.cooldownUntil>now){const sec=Math.ceil((k.cooldownUntil-now)/1000);stateHtml='<span class="key-state cool">Cooldown '+sec+'s</span>'}return'<div class="key-row"><span class="key-id">#'+(i+1)+' · '+esc(k.key.slice(0,8))+'…'+esc(k.key.slice(-4))+'</span>'+stateHtml+'</div>'}).join('')}
+function saveKeysFromUI(){const input=document.getElementById('api-keys-input');if(!input)return;const raw=input.value||'';const keys=raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);const valid=keys.filter(k=>k.startsWith('sk-'));const invalid=keys.filter(k=>!k.startsWith('sk-'));if(invalid.length>0){if(!confirm(invalid.length+' clé(s) ne commencent pas par "sk-". Les ignorer ?'))return}setStoredKeys(valid);refreshKeyPool();updateApiPanel();renderKeysStatus();if(valid.length===0)showToast('Aucune clé valide enregistrée','warn');else showToast(valid.length+' clé(s) enregistrée(s) ✓','success');debugLog('success','CLÉS',valid.length+' clé(s) active(s) · parallélisme max = '+valid.length);journalLog(valid.length+' clé(s) API active(s). Parallélisme maximal : '+valid.length+'.','key')}
+function updateApiPanel(){const panel=document.getElementById('api-panel');const input=document.getElementById('api-keys-input');const line=document.getElementById('api-status-line');const text=document.getElementById('api-status-text');if(!panel||!input||!line||!text)return;refreshKeyPool();const n=state.keyPool.length;if(n>0){panel.classList.add('ok');line.classList.add('ok');text.textContent=n+' clé(s) active(s) · parallélisme : '+n;input.value=state.keyPool.map(k=>k.key).join('\n');input.placeholder=''}else{panel.classList.remove('ok');line.classList.remove('ok');text.textContent='Aucune clé API enregistrée';input.value='';input.placeholder='Collez vos clés API Agnes ici — une par ligne (sk-...)'}renderKeysStatus();updateButtons()}
+
+// ========== API FETCH ==========
+async function apiFetch(url,options,label,maxAttempts){
+  options=options||{};label=label||'API';maxAttempts=(typeof maxAttempts==='number'&&maxAttempts>0)?maxAttempts:6;
+  let lastErr=null;
+  for(let attempt=0;attempt<maxAttempts;attempt++){
+    if(state.stopRequested)throw new Error('Arrêt demandé');
+    let keyObj=null;
+    try{keyObj=await acquireKey(label)}catch(e){throw e}
+    const method=options.method||'GET';
+    let bodyPreview=null;
+    if(options.body){try{const p=JSON.parse(options.body);const c=JSON.parse(JSON.stringify(p));const redact=(o)=>{if(Array.isArray(o)){o.forEach(redact);return}if(o&&typeof o==='object'){for(const k in o){if(typeof o[k]==='string'&&o[k].length>140)o[k]=o[k].slice(0,100)+'…[len '+o[k].length+']';else if(typeof o[k]==='object')redact(o[k])}}};redact(c);bodyPreview=c}catch(e){bodyPreview=String(options.body).slice(0,400)}}
+    debugLog('api','REQ '+label,method+' '+url+' · clé #'+(state.keyPool.indexOf(keyObj)+1)+' '+keyObj.key.slice(-4)+' (essai '+(attempt+1)+'/'+maxAttempts+')',bodyPreview);
+    const headers=Object.assign({},options.headers||{},{'Authorization':'Bearer '+keyObj.key});
+    const finalOptions=Object.assign({},options,{headers});
+    try{
+      const t0=Date.now();
+      const res=await fetch(url,finalOptions);
+      const dt=Date.now()-t0;
+      let retryAfter=0;try{retryAfter=parseInt(res.headers.get('Retry-After')||'0',10)||0}catch(e){}
+      let errorText='';
+      if(!res.ok){try{errorText=(await res.clone().text()).slice(0,1200)}catch(e){}}
+      debugLog('response','RÉP '+label,'HTTP '+res.status+' en '+dt+'ms · clé '+keyObj.key.slice(-4),errorText||undefined);
+      if(res.ok){keyObj.errorCount=0;return res}
+      if([400,401,403,404].includes(res.status)){
+        if(res.status===401||res.status===403){keyObj.errorCount=(keyObj.errorCount||0)+1;if(keyObj.errorCount>=3){keyObj.active=false;debugLog('error','CLÉ','Clé '+keyObj.key.slice(-4)+' désactivée');renderKeysStatus()}}
+        const err=new Error('HTTP '+res.status+' — '+errorText.slice(0,400));err.status=res.status;err.body=errorText;throw err;
+      }
+      if(res.status===429){const wait=retryAfter>0?retryAfter:Math.min(120,20+attempt*15);keyObj.cooldownUntil=Date.now()+wait*1000;debugLog('warn','RATELIMIT','Clé '+keyObj.key.slice(-4)+' → cooldown '+wait+'s');renderKeysStatus();const{key:next}=getReadyKey();if(next&&next!==keyObj){debugLog('info','ROTATION','Nouvelle clé : '+next.key.slice(-4));continue}setStatus('Limite API — nouvelle tentative dans '+wait+'s');await sleep(Math.min(wait*1000,3000));continue}
+      if([500,502,503,504,520,522,524].includes(res.status)){const wait=Math.min(60,8+attempt*6);debugLog('warn','SERVICE','HTTP '+res.status+' — attente '+wait+'s');setStatus('Service occupé — reprise dans '+wait+'s');await sleep(wait*1000);continue}
+      const wait=Math.min(60,6+attempt*5);debugLog('warn','HTTP','HTTP '+res.status+' — retry dans '+wait+'s');await sleep(wait*1000);
+    }catch(e){if(e.message==='Arrêt demandé')throw e;if(e.status&&[400,401,403,404].includes(e.status))throw e;lastErr=e;const wait=Math.min(45,4+attempt*4);debugLog('warn','NETWORK',e.message+' — retry dans '+wait+'s');setStatus('Connexion instable — reprise dans '+wait+'s');await sleep(wait*1000)}
+  }
+  throw lastErr||new Error('Tentatives épuisées pour '+label);
+}
+
+// ========== APPELS MODÈLES ==========
+async function callTextModel(systemPrompt,userPrompt,label,maxTokens,temperature){
+  const sysMsg=sanitizeForApi(systemPrompt)||'Assistant.';
+  const usrMsg=sanitizeForApi(userPrompt);
+  if(!usrMsg)throw new Error('callTextModel : userPrompt vide');
+  const body={model:MODEL_TEXT,messages:[{role:'system',content:sysMsg},{role:'user',content:usrMsg}],temperature:typeof temperature==='number'?temperature:0.7,max_tokens:maxTokens||8000,reasoning_effort:'none',chat_template_kwargs:{enable_thinking:false}};
+  const res=await apiFetch(API_BASE+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},label,4);
+  const data=await res.json();
+  const choice=data.choices&&data.choices[0];const msg=choice&&choice.message;
+  let content=msg&&msg.content;
+  if(!content&&msg&&msg.reasoning_content){debugLog('warn',label,'content vide → fallback reasoning_content');content=msg.reasoning_content}
+  debugLog('response',label,'finish_reason='+(choice&&choice.finish_reason)+' · len='+((content&&content.length)||0));
+  return content;
+}
+async function callVisionModel(systemPrompt,userText,imageDataUri,label){
+  const sysMsg=sanitizeForApi(systemPrompt)||'Analyste visuel.';
+  const usrText=sanitizeForApi(userText);
+  const body={model:MODEL_TEXT,messages:[{role:'system',content:sysMsg},{role:'user',content:[{type:'text',text:usrText},{type:'image_url',image_url:{url:imageDataUri}}]}],temperature:0.3,max_tokens:2500,reasoning_effort:'none',chat_template_kwargs:{enable_thinking:false}};
+  const res=await apiFetch(API_BASE+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},label,3);
+  const data=await res.json();
+  const choice=data.choices&&data.choices[0];const msg=choice&&choice.message;
+  let content=msg&&msg.content;if(!content&&msg&&msg.reasoning_content)content=msg.reasoning_content;
+  return content;
+}
+async function callImageModel(prompt,size,ratio){
+  const body={model:MODEL_IMAGE,prompt:sanitizeForApi(prompt),n:1,size:size||'1K',ratio:ratio||state.format||'9:16'};
+  const res=await apiFetch(API_BASE+'/images/generations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},'Image',4);
+  const data=await res.json();
+  const item=data.data&&data.data[0];if(!item)throw new Error('Pas de donnée image');
+  if(item.url)return item.url;if(item.b64_json)return'data:image/png;base64,'+item.b64_json;
+  throw new Error('Format image inconnu');
+}
+
+// ========== RSS ==========
+async function fetchViaRss2Json(rssUrl){const url='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl);const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();if(data.status!=='ok')throw new Error('rss2json status: '+data.status);return(data.items||[]).map((item,i)=>({title:item.title||'',link:item.link||'',pubDate:item.pubDate||'',source:item.author||'Google News',rank:i+1}))}
+async function fetchViaAllOrigins(rssUrl){const url='https://api.allorigins.win/raw?url='+encodeURIComponent(rssUrl);const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);return parseRssXml(await res.text())}
+async function fetchViaCodeTabs(rssUrl){const url='https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(rssUrl);const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);return parseRssXml(await res.text())}
+function parseRssXml(text){const parser=new DOMParser();const xmlDoc=parser.parseFromString(text,'text/xml');const items=xmlDoc.querySelectorAll('item');const out=[];items.forEach((item,i)=>{if(i>=30)return;const title=item.querySelector('title')?item.querySelector('title').textContent:'';const link=item.querySelector('link')?item.querySelector('link').textContent:'';const pubDate=item.querySelector('pubDate')?item.querySelector('pubDate').textContent:'';const source=item.querySelector('source')?item.querySelector('source').textContent:'';if(title)out.push({title,link,pubDate,source,rank:i+1})});return out}
+async function fetchNewsWithFallback(category){const rssUrl=GOOGLE_NEWS_RSS[category]||GOOGLE_NEWS_RSS.NATION;const methods=[{name:'rss2json',fn:()=>fetchViaRss2Json(rssUrl)},{name:'allorigins',fn:()=>fetchViaAllOrigins(rssUrl)},{name:'codetabs',fn:()=>fetchViaCodeTabs(rssUrl)}];for(const m of methods){try{debugLog('info','RSS','Tentative via '+m.name);const items=await m.fn();if(items&&items.length>0){debugLog('success','RSS',items.length+' sujets via '+m.name);return{items,method:m.name}}}catch(e){debugLog('warn','RSS',m.name+' → '+e.message)}}debugLog('warn','RSS','Aucun flux accessible — mode démo');return{items:getDemoNews(category),method:'demo'}}
+function getDemoNews(category){const demo={NATION:['Mouvement lycéen : plusieurs établissements bloqués en France','Manifestation nationale contre la réforme des retraites','Assemblée citoyenne sur les salaires et conditions de travail','Grève dans les transports publics','Rassemblement pour le pouvoir d\'achat'],WORLD:['Sommet international sur le climat','Négociations pour un cessez-le-feu','Traité commercial entre plusieurs pays','Crise humanitaire et aide internationale','Séisme et opérations de secours'],BUSINESS:['Inflation et pouvoir d\'achat des ménages','Annonce de suppressions de postes','Grève dans un grand groupe industriel','Fusion bancaire et conséquences sociales','Chute des prix de l\'énergie'],TECHNOLOGY:['Nouvelle régulation des plateformes numériques','Débat sur l\'intelligence artificielle','Cyberattaque contre un service public','Sortie d\'un nouveau smartphone','Transition numérique des administrations']};const titles=demo[category]||demo.NATION;return titles.map((title,i)=>({title,link:'#',pubDate:new Date().toISOString(),source:'Mode démo',rank:i+1}))}
+
+// ========== IMAGES ==========
+function fileToDataUri(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=e=>resolve(e.target.result);reader.onerror=()=>reject(new Error('Erreur lecture'));reader.readAsDataURL(file)})}
+async function compressImage(dataUrl,maxSide){return new Promise((resolve)=>{const img=new Image();img.onload=()=>{try{let{width,height}=img;const scale=Math.min(1,maxSide/Math.max(width,height));width=Math.round(width*scale);height=Math.round(height*scale);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,width,height);resolve(canvas.toDataURL('image/jpeg',0.88))}catch(e){resolve(dataUrl)}};img.onerror=()=>resolve(dataUrl);img.src=dataUrl})}
+
+// ========== QUEUE PARALLÉLISÉE ==========
+function createRateLimitedQueue(maxConcurrent,minIntervalMs){let running=0;let lastStart=0;const queue=[];let resolveIdle=null;function tryNext(){if(running>=maxConcurrent)return;if(queue.length===0){if(running===0&&resolveIdle){resolveIdle();resolveIdle=null}return}const now=Date.now();const wait=Math.max(0,lastStart+minIntervalMs-now);if(wait>0){setTimeout(tryNext,wait);return}const task=queue.shift();running++;lastStart=Date.now();task().finally(()=>{running--;setTimeout(tryNext,0)})}return{add(fn){return new Promise((resolve,reject)=>{queue.push(()=>fn().then(resolve,reject));setTimeout(tryNext,0)})},idle(){return new Promise(r=>{if(running===0&&queue.length===0)return r();resolveIdle=r})}}}
+</script>
+<script>
+// ========== UI BINDINGS ==========
+function updateButtons(){
+  const launch=document.getElementById('launch-btn');
+  const stop=document.getElementById('stop-btn');
+  const play=document.getElementById('play-film-btn');
+  const replay=document.getElementById('replay-btn');
+  const loadNews=document.getElementById('load-news-btn');
+  const hasKey=hasActiveKey();
+  const hasNews=!!state.selectedNews;
+  const hasCharacters=state.selectedCharacters.size>0;
+  const hasVideos=state.videos.filter(v=>v.status==='done').length>0;
+  if(launch){launch.disabled=!hasKey||!hasNews||!hasCharacters||state.isRunning;if(!hasKey)launch.textContent='🔑 Ajoutez au moins une clé API';else if(!hasNews)launch.textContent='📰 Sélectionnez une actualité';else if(!hasCharacters)launch.textContent='👥 Sélectionnez au moins un personnage';else if(state.isRunning)launch.textContent='⏳ Génération en cours…';else launch.textContent='▶ Générer la scène'}
+  if(stop)stop.classList.toggle('visible',state.isRunning);
+  if(play)play.disabled=!hasVideos||state.isPlayingFilm||state.isRunning;
+  if(replay)replay.disabled=!hasVideos||state.isPlayingFilm||state.isRunning;
+  if(loadNews)loadNews.disabled=state.isRunning;
+  const pb=document.getElementById('player-badge');if(pb)pb.textContent=state.videos.filter(v=>v.status==='done').length;
+}
+
+function renderNewsList(){
+  const list=document.getElementById('news-list');if(!list)return;
+  if(state.newsItems.length===0){list.innerHTML='<div style="padding:1.2rem;text-align:center;color:var(--faint);font-size:.8rem;">Aucune actualité chargée.</div>';return}
+  list.innerHTML=state.newsItems.map((item,i)=>{const isSelected=state.selectedNews&&state.selectedNews.rank===item.rank;return'<div class="news-item'+(isSelected?' selected':'')+'" data-news-rank="'+item.rank+'"><div class="news-checkbox">'+(isSelected?'✓':'')+'</div><div><div class="news-title">'+esc(item.title)+'</div>'+(item.source?'<span class="news-source">'+esc(item.source)+(item.pubDate?' · '+esc(item.pubDate.slice(0,10)):'')+'</span>':'')+'</div></div>'}).join('');
+  list.querySelectorAll('.news-item').forEach(el=>{el.addEventListener('click',()=>{const rank=parseInt(el.dataset.newsRank,10);const news=state.newsItems.find(n=>n.rank===rank);if(!news)return;state.selectedNews=news;state.factCheck=null;renderNewsList();updateButtons();debugLog('info','NEWS','Sujet sélectionné : '+news.title.slice(0,60));journalLog('Sujet sélectionné : « '+news.title.slice(0,80)+' »','highlight');runFactCheck()})});
+  const badge=document.getElementById('news-badge');if(badge)badge.textContent=state.selectedNews?'1 sélectionné':state.newsItems.length+' disponibles';
+}
+
+async function loadNews(){
+  const category=document.getElementById('news-category').value;
+  setStatus('Chargement des actualités…');
+  journalLog('Récupération des actualités via Google News RSS…','news');
+  try{
+    const result=await fetchNewsWithFallback(category);
+    state.newsItems=result.items;state.selectedNews=null;state.factCheck=null;
+    renderNewsList();updateButtons();
+    journalLog(result.items.length+' actualités chargées (via '+result.method+').','news');
+    showToast(result.items.length+' actualités chargées ('+result.method+')','success');
+  }catch(e){debugLog('error','NEWS',e.message);journalLog('Erreur lors du chargement : '+e.message,'error');showToast('Erreur : '+e.message.slice(0,50),'error')}
+  setStatus(null);
+}
+
+async function runFactCheck(){
+  if(!state.selectedNews)return;
+  if(!hasActiveKey())return;
+  const block=document.getElementById('fact-check-block');
+  const content=document.getElementById('fact-check-content');
+  if(block)block.classList.remove('hidden');
+  if(content)content.innerHTML='<div style="padding:.8rem;color:var(--dim);text-align:center;"><div class="spinner-mini" style="margin:0 auto .5rem;"></div>Vérification factuelle en cours…</div>';
+  journalLog('Vérification factuelle du sujet…','script');
+  setStatus('Vérification factuelle…');
+  try{
+    const prompt=buildFactCheckPrompt([state.selectedNews]);
+    const raw=await callTextModel(buildSystemPrompt(),prompt,'Fact Check',3000,0.2);
+    if(!raw)throw new Error('Pas de réponse');
+    const parsed=extractJson(raw);
+    if(!parsed)throw new Error('JSON invalide');
+    state.factCheck=parsed;renderFactCheck(parsed);
+    journalLog('Vérification terminée — niveau de confiance : '+(parsed.niveau_confiance||'?'),'success');
+  }catch(e){debugLog('error','FACT CHECK',e.message);if(content)content.innerHTML='<div style="color:var(--err);padding:.8rem;">Erreur vérification : '+esc(e.message.slice(0,100))+'</div>';journalLog('Échec vérification factuelle : '+e.message,'error')}
+  setStatus(null);
+}
+
+function renderFactCheck(fc){
+  const content=document.getElementById('fact-check-content');if(!content)return;
+  const rows=[['Titre',fc.titre],['Résumé factuel',fc.resume_factuel],['Date',fc.date],['Lieu',fc.lieu],['Acteurs',Array.isArray(fc.acteurs)?fc.acteurs.join(', '):''],['Chiffres',Array.isArray(fc.chiffres)?fc.chiffres.join(' · '):''],['Revendications',Array.isArray(fc.revendications)?fc.revendications.join(' · '):''],['Actions observées',Array.isArray(fc.actions_observees)?fc.actions_observees.join(' · '):''],['Sources',Array.isArray(fc.sources)?fc.sources.join(' · '):''],['Niveau de confiance',fc.niveau_confiance],['Type de reconstitution',fc.type_de_reconstitution]].filter(r=>r[1]&&String(r[1]).length>0);
+  let html=rows.map(r=>'<div class="an-row"><span class="an-key">'+esc(r[0])+'</span><span class="an-val">'+esc(String(r[1]))+'</span></div>').join('');
+  if(Array.isArray(fc.elements_a_ne_pas_inventer)&&fc.elements_a_ne_pas_inventer.length)html+='<div class="an-row"><span class="an-key">⚠️ À ne pas inventer</span><span class="an-val">'+esc(fc.elements_a_ne_pas_inventer.join(' · '))+'</span></div>';
+  html+='<div class="an-json">'+esc(JSON.stringify(fc,null,2))+'</div>';
+  content.innerHTML=html;
+}
+
+async function analyzeReferenceImage(dataUri){
+  if(!hasActiveKey()){showToast('Ajoutez une clé API','warn');return}
+  const block=document.getElementById('reference-analysis-block');
+  const content=document.getElementById('reference-analysis-content');
+  if(block)block.classList.remove('hidden');
+  if(content)content.innerHTML='<div style="padding:.8rem;color:var(--dim);text-align:center;"><div class="spinner-mini" style="margin:0 auto .5rem;"></div>Analyse de la référence…</div>';
+  journalLog('Analyse de la référence visuelle (éléments observables uniquement)…','script');
+  setStatus('Analyse de la référence…');
+  try{
+    const prompt=buildReferenceAnalysisPrompt('Image fournie par l\'utilisateur');
+    const raw=await callVisionModel(buildSystemPrompt(),prompt,dataUri,'Référence');
+    if(!raw)throw new Error('Pas de réponse');
+    const parsed=extractJson(raw);
+    if(!parsed)throw new Error('JSON invalide');
+    state.referenceAnalysis=parsed;renderReferenceAnalysis(parsed);
+    journalLog('Analyse terminée — type : '+(parsed.type_de_document||'?'),'success');
+  }catch(e){debugLog('error','RÉFÉRENCE',e.message);if(content)content.innerHTML='<div style="color:var(--err);padding:.8rem;">Erreur analyse : '+esc(e.message.slice(0,100))+'</div>'}
+  setStatus(null);
+}
+
+function renderReferenceAnalysis(ra){
+  const content=document.getElementById('reference-analysis-content');if(!content)return;
+  const rows=[['Type de document',ra.type_de_document],['Date connue',ra.date_si_connue],['Lieu connu',ra.lieu_si_connu],['Éléments visuels',Array.isArray(ra.elements_visuels_confirmables)?ra.elements_visuels_confirmables.join(' · '):''],['Architecture',Array.isArray(ra.architecture_et_geographie)?ra.architecture_et_geographie.join(' · '):''],['Organisation foule',ra.organisation_de_la_foule],['Vêtements / objets',Array.isArray(ra.vetements_et_objets)?ra.vetements_et_objets.join(' · '):''],['Mouvements généraux',Array.isArray(ra.mouvements_generaux)?ra.mouvements_generaux.join(' · '):''],['Conditions lumineuses',ra.conditions_lumineuses],['Personnes identifiables',Array.isArray(ra.personnes_identifiables)?ra.personnes_identifiables.join(' · '):''],['Risques de ressemblance',Array.isArray(ra.risques_de_ressemblance)?ra.risques_de_ressemblance.join(' · '):''],['Recommandations',Array.isArray(ra.recommandations_de_reconstitution)?ra.recommandations_de_reconstitution.join(' · '):'']].filter(r=>r[1]&&String(r[1]).length>0);
+  let html=rows.map(r=>'<div class="an-row"><span class="an-key">'+esc(r[0])+'</span><span class="an-val">'+esc(String(r[1]))+'</span></div>').join('');
+  html+='<div class="an-json">'+esc(JSON.stringify(ra,null,2))+'</div>';
+  content.innerHTML=html;
+}
+
+function renderCharactersGrid(){
+  const grid=document.getElementById('characters-grid');if(!grid)return;
+  const characters=Object.values(CHARACTER_BIBLE);
+  grid.innerHTML=characters.map(c=>{const selected=state.selectedCharacters.has(c.id);return'<div class="bible-card'+(selected?' selected':'')+'" data-char-id="'+c.id+'"><div class="bible-name">'+esc(c.name)+'</div><div class="bible-role">'+esc(c.role)+'</div><div class="bible-app">'+esc(c.appearance.slice(0,90))+'…</div><div class="bible-check"></div></div>'}).join('');
+  grid.querySelectorAll('.bible-card').forEach(el=>{el.addEventListener('click',()=>{const id=el.dataset.charId;if(state.selectedCharacters.has(id))state.selectedCharacters.delete(id);else{if(state.selectedCharacters.size>=4){showToast('Maximum 4 personnages par scène','warn');return}state.selectedCharacters.add(id)}renderCharactersGrid();updateButtons();const badge=document.getElementById('characters-badge');if(badge)badge.textContent=state.selectedCharacters.size+' sélectionné(s)'})});
+  const badge=document.getElementById('characters-badge');if(badge)badge.textContent=state.selectedCharacters.size+' sélectionné(s)';
+}
+
+function renderLocationsGrid(){
+  const grid=document.getElementById('locations-grid');if(!grid)return;
+  const locations=Object.values(LOCATION_BIBLE);
+  grid.innerHTML=locations.map(l=>{const selected=state.selectedLocation===l.id;return'<div class="location-chip'+(selected?' selected':'')+'" data-loc-id="'+l.id+'">'+esc(l.name)+'</div>'}).join('');
+  grid.querySelectorAll('.location-chip').forEach(el=>{el.addEventListener('click',()=>{const id=el.dataset.locId;state.selectedLocation=(state.selectedLocation===id)?null:id;renderLocationsGrid();const badge=document.getElementById('locations-badge');if(badge){const loc=state.selectedLocation?LOCATION_BIBLE[state.selectedLocation]:null;badge.textContent=loc?loc.name:'Aucun'}})});
+}
+
+function renderPalettesGrid(){
+  const grid=document.getElementById('palette-grid');if(!grid)return;
+  grid.innerHTML=WA_PALETTES.map(p=>{const selected=state.selectedPalette===p.id;return'<div class="location-chip'+(selected?' selected':'')+'" data-pal-id="'+p.id+'" style="display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;"><div style="display:flex;gap:2px;width:100%;">'+p.colors.map(c=>'<div style="flex:1;height:8px;background:'+c+';border-radius:2px;"></div>').join('')+'</div><div style="font-size:.72rem;">'+esc(p.label)+'</div></div>'}).join('');
+  grid.querySelectorAll('[data-pal-id]').forEach(el=>{el.addEventListener('click',()=>{state.selectedPalette=el.dataset.palId;renderPalettesGrid();const badge=document.getElementById('palette-badge');const p=WA_PALETTES.find(x=>x.id===state.selectedPalette);if(badge&&p)badge.textContent=p.label})});
+}
+
+async function generateScript(){
+  journalLog('Génération du scénario…','script');
+  setStatus('L\'IA écrit le scénario…');
+  const input={fact_check:state.factCheck||{},reference_analysis:state.referenceAnalysis||{},selected_characters:Array.from(state.selectedCharacters),selected_location:state.selectedLocation,palette:state.selectedPalette};
+  const prompt=buildScriptPrompt(input);
+  debugLog('ai','PROMPT SCÉNARIO','Envoyé ('+prompt.length+' chars)',prompt.slice(0,1500)+'…');
+  for(let attempt=1;attempt<=2;attempt++){
+    const temp=attempt===1?0.7:0.3;
+    debugLog('ai','SCÉNARIO','Tentative '+attempt+'/2 (temp='+temp+')');
+    let content;
+    try{content=await callTextModel(buildSystemPrompt(),prompt,'Scénario (essai '+attempt+')',16000,temp)}catch(e){debugLog('error','SCÉNARIO','Tentative '+attempt+' échouée : '+e.message);continue}
+    if(!content){debugLog('warn','SCÉNARIO','Contenu vide');continue}
+    const parsed=extractJson(content);
+    if(parsed&&parsed.scenes&&Array.isArray(parsed.scenes)){debugLog('success','SCÉNARIO','JSON valide à la tentative '+attempt);return normalizeScript(parsed)}
+    debugLog('error','SCÉNARIO','JSON invalide tentative '+attempt);
+    debugLog('error','SCÉNARIO','Aperçu',content.slice(0,2500));
+  }
+  debugLog('warn','SCÉNARIO','Fallback programmatique après 2 échecs');
+  journalLog('⚠️ Le LLM n\'a pas produit de JSON valide — fabrication d\'un scénario de secours.','warn');
+  return buildFallbackScript();
+}
+
+function normalizeScript(script){
+  if(!script||!script.scenes||!Array.isArray(script.scenes))return null;
+  script.scenes=script.scenes.slice(0,state.sceneCount);
+  const selectedCharIds=Array.from(state.selectedCharacters);
+  const location=state.selectedLocation?LOCATION_BIBLE[state.selectedLocation]:null;
+  script.scenes.forEach((sc,i)=>{
+    sc.id=sc.id||('scene-'+String(i+1).padStart(3,'0'));
+    sc.characters=Array.isArray(sc.characters)&&sc.characters.length>0?sc.characters.filter(c=>selectedCharIds.includes(c)):selectedCharIds;
+    if(sc.characters.length===0)sc.characters=selectedCharIds;
+    sc.location_name=sc.location_name||(location?location.name:'');
+    sc.location_description=sc.location_description||(location?location.description:'');
+    sc.fact_summary=sc.fact_summary||(state.factCheck?state.factCheck.resume_factuel:'');
+    sc.reference_summary=sc.reference_summary||(state.referenceAnalysis?JSON.stringify(state.referenceAnalysis).slice(0,200):'');
+    sc.duration_seconds=sc.duration_seconds||Math.round(state.durationFrames/24);
+    sc.disclaimer=sc.disclaimer||'Reconstitution manga fictive inspirée de faits réels et générée par IA';
+    if(!sc.dialogue)sc.dialogue='';
+    if(!sc.narration)sc.narration='';
+    if(!sc.visual_description)sc.visual_description=sc.fictional_setup||sc.location_description||'';
+    if(!sc.camera)sc.camera='Plan moyen réaliste, caméra stable.';
+    if(!sc.continuity_start)sc.continuity_start='';
+    if(!sc.continuity_end)sc.continuity_end='';
+    if(!Array.isArray(sc.sources))sc.sources=state.selectedNews&&state.selectedNews.link?[state.selectedNews.link]:[];
+  });
+  return script;
+}
+
+function buildFallbackScript(){
+  const selectedCharIds=Array.from(state.selectedCharacters);
+  const location=state.selectedLocation?LOCATION_BIBLE[state.selectedLocation]:null;
+  const newsTitle=state.selectedNews?state.selectedNews.title:'Actualité en cours';
+  const scenes=[];
+  for(let i=0;i<state.sceneCount;i++){
+    scenes.push({id:'scene-'+String(i+1).padStart(3,'0'),type:i===0?'scene_de_rue':(i===state.sceneCount-1?'famille':'lycee'),location_name:location?location.name:'',location_description:location?location.description:'',characters:selectedCharIds,fact_summary:state.factCheck?state.factCheck.resume_factuel:'',reference_summary:'',fictional_setup:'Scène de vie quotidienne inspirée du sujet.',dialogue:'',narration:'',visual_description:'Plan '+(i+1)+' — '+(location?location.name:'lieu réel')+' : '+newsTitle,camera:i===0?'Plan large pour situer le lieu.':(i===state.sceneCount-1?'Gros plan sur un personnage.':'Plan moyen des interactions.'),duration_seconds:Math.round(state.durationFrames/24),continuity_start:'',continuity_end:'',sources:state.selectedNews&&state.selectedNews.link?[state.selectedNews.link]:[],disclaimer:'Reconstitution manga fictive inspirée de faits réels et générée par IA'});
+  }
+  return{title:'Séquence manga — '+newsTitle.slice(0,60),logline:'Reconstitution manga fictive inspirée d\'un fait réel documenté.',location_name:location?location.name:'',location_description:location?location.description:'',characters:selectedCharIds,scenes:scenes};
+}
+
+function renderScript(){
+  const view=document.getElementById('script-view');if(!view)return;
+  if(!state.script){view.textContent='Le scénario apparaîtra ici…';return}
+  const s=state.script;
+  let html='';
+  html+='<div class="script-title">📖 '+esc(s.title||'Sans titre')+'</div>';
+  html+='<div class="script-logline">'+esc(s.logline||'')+'</div>';
+  html+='<div class="script-meta">';
+  html+='📍 Lieu : <strong style="color:var(--acc);">'+esc(s.location_name||'—')+'</strong><br>';
+  html+='👥 Personnages : '+esc(s.characters.map(id=>CHARACTER_BIBLE[id]?CHARACTER_BIBLE[id].name:id).join(', '))+'<br>';
+  html+='🎬 '+(s.scenes||[]).length+' scènes · '+state.format+' · '+state.stopMotionFrames+' images/scène · '+state.stopMotionFps+' fps';
+  html+='</div>';
+  (s.scenes||[]).forEach((sc,i)=>{
+    html+='<div class="script-scene">';
+    html+='<div class="sc-head">🎬 Scène '+(i+1)+' · '+esc((sc.type||'').toUpperCase())+'</div>';
+    if(sc.location_name)html+='<div class="sc-line"><span class="sc-label">Lieu</span>'+esc(sc.location_name)+'</div>';
+    if(sc.characters&&sc.characters.length)html+='<div class="sc-line"><span class="sc-label">Personnages</span>'+sc.characters.map(id=>esc(CHARACTER_BIBLE[id]?CHARACTER_BIBLE[id].name:id)).join(', ')+'</div>';
+    if(sc.visual_description)html+='<div class="sc-line"><span class="sc-label">Visuel</span>'+esc(sc.visual_description.slice(0,200))+(sc.visual_description.length>200?'…':'')+'</div>';
+    if(sc.dialogue)html+='<div class="sc-line sc-dialogue"><span class="sc-label">Dialogue (fictif)</span>« '+esc(sc.dialogue)+' »</div>';
+    if(sc.narration)html+='<div class="sc-line sc-narration"><span class="sc-label">Narration</span>'+esc(sc.narration)+'</div>';
+    if(sc.camera)html+='<div class="sc-line"><span class="sc-label">Caméra</span>'+esc(sc.camera)+'</div>';
+    if(sc.fact_summary)html+='<div class="sc-line"><span class="sc-label">Fait</span>'+esc(sc.fact_summary.slice(0,120))+(sc.fact_summary.length>120?'…':'')+'</div>';
+    html+='<div class="sc-disclaimer">⚠️ '+esc(sc.disclaimer||'Reconstitution manga générée par IA')+'</div>';
+    html+='</div>';
+  });
+  view.innerHTML=html;
+  const badge=document.getElementById('script-badge');if(badge)badge.textContent=(s.scenes||[]).length+' scènes';
+}
+
+// ========== STOP-MOTION ==========
+function renderVideos(){
+  const grid=document.getElementById('videos-grid');if(!grid)return;
+  while(grid.children.length>state.videos.length)grid.removeChild(grid.lastChild);
+  for(let i=grid.children.length;i<state.videos.length;i++){
+    const card=document.createElement('div');
+    card.className='scene-card';
+    card.dataset.index=String(i);card.dataset.status='';card.dataset.url='';card.dataset.progress='';
+    card.innerHTML='<div class="scene-card-header"><span class="scene-card-title">🎬 Scène '+(i+1)+'</span><span class="scene-card-status"></span></div><div class="scene-card-body"></div>';
+    grid.appendChild(card);
+  }
+  state.videos.forEach((v,i)=>{
+    const card=grid.children[i];if(!card)return;
+    const titleEl=card.querySelector('.scene-card-title');
+    const statusEl=card.querySelector('.scene-card-status');
+    const bodyEl=card.querySelector('.scene-card-body');
+    const titleText='🎬 Scène '+(i+1)+(v.type?' · '+v.type:'');
+    if(titleEl.textContent!==titleText)titleEl.textContent=titleText;
+    const newClass='scene-card '+(v.status==='done'?'done':v.status==='error'?'error':(v.status==='loading'||v.status==='pending')?'generating':'');
+    if(card.className!==newClass)card.className=newClass;
+    if(v.status==='done'&&v.frames&&v.frames.length){
+      if(card.dataset.url!==('frames-'+i)||!bodyEl.querySelector('.stopmotion-preview')){
+        statusEl.innerHTML='<span style="color:var(--ok);">✓ '+v.frames.length+' img</span>';
+        bodyEl.innerHTML='';
+        const preview=document.createElement('div');
+        preview.className='stopmotion-preview';
+        preview.style.aspectRatio=(state.format==='9:16'?'9/16':'16/9');
+        const img=document.createElement('img');
+        img.src=v.frames[0];
+        preview.appendChild(img);
+        const info=document.createElement('div');
+        info.style.cssText='position:absolute;bottom:4px;left:4px;right:4px;padding:.35rem .5rem;background:rgba(0,0,0,.7);border-radius:2px;font-size:.62rem;font-family:var(--fm);color:#e5c15a;text-align:center;';
+        info.textContent='🎬 '+v.frames.length+' images · '+(v.fps||state.stopMotionFps)+' fps';
+        preview.appendChild(info);
+        let currentFrame=0;let animInterval=null;
+        const startAnim=()=>{if(animInterval)return;animInterval=setInterval(()=>{currentFrame=(currentFrame+1)%v.frames.length;img.src=v.frames[currentFrame]},1000/(v.fps||state.stopMotionFps))};
+        const stopAnim=()=>{if(animInterval){clearInterval(animInterval);animInterval=null}};
+        preview.addEventListener('mouseenter',startAnim);preview.addEventListener('mouseleave',stopAnim);
+        preview.addEventListener('touchstart',(e)=>{e.preventDefault();startAnim()},{passive:false});
+        preview.addEventListener('touchend',stopAnim);
+        bodyEl.appendChild(preview);
+        const dl=document.createElement('a');
+        dl.className='scene-download';dl.href='#';dl.textContent='⬇ Télécharger les '+v.frames.length+' images';
+        dl.addEventListener('click',(e)=>{e.preventDefault();v.frames.forEach((url,idx)=>{const a=document.createElement('a');a.href=url;a.download='scene-'+(i+1)+'-frame-'+String(idx+1).padStart(2,'0')+'.jpg';a.target='_blank';document.body.appendChild(a);setTimeout(()=>{a.click();document.body.removeChild(a)},idx*200)});showToast('Téléchargement des '+v.frames.length+' images…','success')});
+        bodyEl.appendChild(dl);
+        card.dataset.url='frames-'+i;
+      }
+    } else if(v.status==='error'){
+      if(card.dataset.status!=='error'){statusEl.innerHTML='<span style="color:var(--err);">✕</span>';bodyEl.innerHTML='<div class="scene-placeholder" style="color:var(--err);">Erreur : '+esc(v.error||'inconnue')+'</div>'}
+    } else {
+      statusEl.innerHTML='<span class="spinner-mini"></span>';
+      const progressTxt=v.progress||'En attente…';
+      if(card.dataset.progress!==progressTxt||card.dataset.status!==v.status)bodyEl.innerHTML='<div class="scene-placeholder"><div class="spinner-mini"></div><span>'+esc(progressTxt)+'</span></div>';
+    }
+    card.dataset.status=v.status||'';card.dataset.progress=v.progress||'';
+  });
+  const c=document.getElementById('videos-count');if(c)c.textContent=state.videos.filter(v=>v.status==='done').length+'/'+state.videos.length;
+}
+
+async function generateAllScenes(){
+  state.videos=[];state.isRunning=true;state.stopRequested=false;
+  document.getElementById('stop-btn').classList.add('visible');
+  document.getElementById('launch-btn').disabled=true;
+  const scenes=(state.script.scenes||[]).slice(0,state.sceneCount);
+  for(let i=0;i<scenes.length;i++)state.videos.push({status:'pending',frames:null,fps:state.stopMotionFps,progress:'En attente…',type:scenes[i].type||'scene'});
+  renderVideos();revealSection('section-videos');
+  const workerCount=Math.max(1,state.keyPool.filter(k=>k.active).length);
+  journalLog('Lancement de '+workerCount+' worker(s) sur '+scenes.length+' scènes ('+state.stopMotionFrames+' images/scène).','video');
+  const queue=scenes.map((scene,index)=>({scene,index}));
+  const workers=[];
+  for(let w=0;w<workerCount;w++)workers.push(sceneWorker(w,queue));
+  await Promise.all(workers);
+  state.isRunning=false;state.stopRequested=false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  updateButtons();
+  const done=state.videos.filter(v=>v.status==='done').length;
+  if(done>0){revealSection('section-player');journalLog('Bilan : '+done+'/'+scenes.length+' scènes prêtes.','success')}
+  else journalLog('Aucune scène n\'a pu être générée.','error');
+}
+
+async function sceneWorker(workerId,queue){while(queue.length>0&&!state.stopRequested){const task=queue.shift();if(!task)break;await generateOneScene(task.scene,task.index,workerId)}}
+
+async function generateOneScene(scene,index,workerId){
+  if(state.stopRequested)return;
+  state.videos[index].status='loading';state.videos[index].progress='Initialisation…';renderVideos();
+  journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' ('+state.stopMotionFrames+' images)','video');
+  try{
+    // ÉTAPE 1 : image d'ancrage
+    let baseImageUrl=null;
+    try{
+      const anchorPrompt=buildAnchorImagePrompt(scene);
+      state.videos[index].progress='Image d\'ancrage…';
+      renderVideos();
+      journalLog('Worker '+(workerId+1)+' → image d\'ancrage scène '+(index+1)+'…','video');
+      baseImageUrl=await callImageModel(anchorPrompt,'1K',state.format);
+      debugLog('success','ANCRAGE '+(index+1),'Image d\'ancrage OK');
+    }catch(e){if(e.message==='Arrêt demandé')return;debugLog('warn','ANCRAGE '+(index+1),'Image échouée : '+e.message)}
+    if(state.stopRequested)return;
+
+    // ÉTAPE 2 : génération des N images stop-motion
+    state.videos[index].progress='Génération des '+state.stopMotionFrames+' images…';
+    renderVideos();
+    const frames=new Array(state.stopMotionFrames).fill(null);
+    const imageQueue=createRateLimitedQueue(IMAGE_PARALLEL,IMAGE_INTERVAL_MS);
+    const tasks=[];
+    for(let f=0;f<state.stopMotionFrames;f++){
+      const frameIdx=f;
+      tasks.push(imageQueue.add(async()=>{
+        if(state.stopRequested)return;
+        const motionPhrase=pickMotionPhrase(frameIdx,state.stopMotionFrames,scene);
+        const prompt=buildStopMotionPrompt(scene,motionPhrase,frameIdx,state.stopMotionFrames);
+        try{
+          const url=await callImageModel(prompt,'1K',state.format);
+          frames[frameIdx]=url;
+          const completed=frames.filter(Boolean).length;
+          state.videos[index].progress='Images : '+completed+'/'+state.stopMotionFrames;
+          renderVideos();
+          debugLog('success','FRAME '+(frameIdx+1)+'/'+state.stopMotionFrames,'OK');
+        }catch(e){
+          if(e.message==='Arrêt demandé')return;
+          debugLog('error','FRAME '+(frameIdx+1),e.message);
+          frames[frameIdx]=frames[frameIdx-1]||baseImageUrl||null;
+        }
+      }));
+    }
+    await Promise.allSettled(tasks);
+    await imageQueue.idle();
+    if(state.stopRequested)return;
+
+    const validFrames=frames.filter(Boolean);
+    if(validFrames.length===0)throw new Error('Aucune image générée');
+    for(let f=0;f<state.stopMotionFrames;f++)if(!frames[f])frames[f]=validFrames[validFrames.length-1];
+
+    // ÉTAPE 3 : succès
+    state.videos[index]={
+      status:'done',
+      frames:frames,
+      fps:state.stopMotionFps,
+      progress:'Terminé',
+      type:scene.type||'scene',
+      duration:(frames.length/state.stopMotionFps).toFixed(1)+'s'
+    };
+    renderVideos();
+    journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' prête ✓ ('+validFrames.length+' images)','success');
+    debugLog('success','SCÈNE '+(index+1),'Terminée en stop-motion');
+  }catch(e){
+    if(e.message==='Arrêt demandé')return;
+    state.videos[index]={status:'error',frames:null,progress:'Erreur',type:scene.type||'scene',error:e.message};
+    renderVideos();
+    journalLog('Worker '+(workerId+1)+' → Scène '+(index+1)+' échouée : '+e.message.slice(0,80),'error');
+    debugLog('error','SCÈNE '+(index+1),e.message);
+  }
+}
+
+// ========== TTS ==========
+let ttsVoice=null;
+function initTTS(){if(!('speechSynthesis'in window))return;const update=()=>{const voices=window.speechSynthesis.getVoices();if(!voices||voices.length===0)return;const fr=voices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith('fr'));if(fr.length===0)return;const preferred=fr.find(v=>/premium|enhanced|amelie|thomas|audrey|marie/i.test(v.name));ttsVoice=preferred||fr[0];debugLog('success','TTS','Voix FR : '+ttsVoice.name)};update();window.speechSynthesis.onvoiceschanged=update}
+function speakFR(text){if(!state.voiceEnabled)return;if(!('speechSynthesis'in window))return;if(!text)return;try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='fr-FR';u.rate=1.02;u.pitch=1.0;u.volume=1.0;if(ttsVoice)u.voice=ttsVoice;window.speechSynthesis.speak(u);state.currentUtterance=u;journalLog('🔊 « '+text.slice(0,90)+(text.length>90?'…':'')+' »','voice')}catch(e){debugLog('warn','TTS','Erreur : '+e.message)}}
+function stopTTS(){try{if('speechSynthesis'in window)window.speechSynthesis.cancel()}catch(e){}state.currentUtterance=null}
+function getSceneSpeechLine(scene){if(scene.narration)return scene.narration;if(scene.dialogue)return scene.dialogue;return''}
+
+// ========== PLAYER ==========
+async function playFilm(){
+  const ready=state.videos.filter(v=>v.status==='done'&&v.frames&&v.frames.length>0);
+  if(ready.length===0){showToast('Aucune scène à diffuser','error');return}
+  if(state.isPlayingFilm)return;
+  state.isPlayingFilm=true;updateButtons();
+  const overlay=document.getElementById('player-overlay');
+  const canvas=document.getElementById('player-canvas');
+  const hint=document.getElementById('player-hint-overlay');
+  if(!overlay||!canvas)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const cssW=window.innerWidth;const cssH=window.innerHeight;
+  canvas.width=Math.round(cssW*dpr);canvas.height=Math.round(cssH*dpr);
+  canvas.style.width=cssW+'px';canvas.style.height=cssH+'px';
+  const ctx=canvas.getContext('2d');
+  overlay.classList.add('visible');hint.classList.remove('hidden');
+  setTimeout(()=>hint.classList.add('hidden'),3500);
+  try{if('speechSynthesis'in window){const u0=new SpeechSynthesisUtterance(' ');u0.volume=0;window.speechSynthesis.speak(u0)}}catch(e){}
+  journalLog('Diffusion de la séquence…','play');
+  const script=state.script||{scenes:[]};
+  const scenes=script.scenes||[];
+  const readyWithScene=ready.map(v=>{const origIndex=state.videos.indexOf(v);return{video:v,scene:scenes[origIndex]||{}}});
+  for(let i=0;i<readyWithScene.length;i++){
+    if(!state.isPlayingFilm)break;
+    const{video,scene}=readyWithScene[i];
+    journalLog('Séquence '+(i+1)+'/'+readyWithScene.length+' — '+(scene.type||''),'play');
+    await playStopMotionScene(video,scene,ctx,canvas,dpr);
+  }
+  stopFilmPlayback();
+  journalLog('Diffusion terminée.','success');
+}
+
+async function playStopMotionScene(videoObj,scene,ctx,canvas,dpr){
+  return new Promise(async(resolve)=>{
+    const frames=videoObj.frames;
+    const fps=videoObj.fps||state.stopMotionFps;
+    const frameDuration=1000/fps;
+    const totalDuration=frames.length*frameDuration;
+    const images=await Promise.all(frames.map(url=>new Promise((res)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url})));
+    const validImages=images.filter(Boolean);
+    if(validImages.length===0){resolve();return}
+    let ttsFired=false;
+    const startTTS=()=>{if(ttsFired)return;ttsFired=true;const line=getSceneSpeechLine(scene);if(line)speakFR(line)};
+    setTimeout(startTTS,300);
+    const startTime=Date.now();let rafId=null;
+    const render=()=>{
+      if(!state.isPlayingFilm){if(rafId)cancelAnimationFrame(rafId);resolve();return}
+      const elapsed=Date.now()-startTime;
+      const progress=Math.min(elapsed/totalDuration,1);
+      const frameIdx=Math.min(Math.floor(elapsed/frameDuration),validImages.length-1);
+      const img=validImages[frameIdx];
+      ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+      if(img){
+        const ar=img.width/img.height;const car=canvas.width/canvas.height;
+        let dw,dh,dx,dy;
+        if(ar>car){dw=canvas.width;dh=canvas.width/ar;dx=0;dy=(canvas.height-dh)/2}
+        else{dh=canvas.height;dw=canvas.height*ar;dx=(canvas.width-dw)/2;dy=0}
+        try{ctx.drawImage(img,dx,dy,dw,dh)}catch(e){}
+      }
+      drawSceneOverlay(ctx,canvas,dpr,scene,progress);
+      if(progress<1&&state.isPlayingFilm){rafId=requestAnimationFrame(render)}
+      else{resolve()}
+    };
+    render();
+  });
+}
+
+function drawSceneOverlay(ctx,canvas,dpr,scene,progress){
+  const w=canvas.width;const h=canvas.height;
+  let alpha=1;
+  if(progress<0.05)alpha=progress/0.05;
+  else if(progress>0.95)alpha=(1-progress)/0.05;
+  alpha=Math.max(0,Math.min(1,alpha));
+  if(alpha<=0)return;
+  const pad=Math.round(Math.min(30*dpr,w*0.03));
+  const bandH=Math.round(Math.min(96*dpr,h*0.16));
+  const bandY=h-bandH-pad;const bandX=pad;const bandW=w-pad*2;
+  ctx.save();ctx.globalAlpha=alpha;
+  const grad=ctx.createLinearGradient(bandX,bandY,bandX,bandY+bandH);
+  grad.addColorStop(0,'rgba(10,10,18,0.0)');grad.addColorStop(0.35,'rgba(10,10,18,0.85)');grad.addColorStop(1,'rgba(10,10,18,0.95)');
+  ctx.fillStyle=grad;ctx.fillRect(bandX,bandY,bandW,bandH);
+  ctx.fillStyle='#e5c15a';ctx.fillRect(bandX,bandY+Math.round(bandH*0.15),Math.round(5*dpr),bandH-Math.round(bandH*0.3));
+  const speakerName=(scene.characters&&scene.characters.length>0&&CHARACTER_BIBLE[scene.characters[0]])?CHARACTER_BIBLE[scene.characters[0]].name:'';
+  const nameSize=Math.round(Math.min(15*dpr,h*0.022));
+  const textSize=Math.round(Math.min(22*dpr,h*0.032));
+  if(speakerName){ctx.fillStyle='#e5c15a';ctx.font='700 '+nameSize+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='top';ctx.fillText(speakerName.toUpperCase(),bandX+Math.round(bandH*0.22),bandY+Math.round(bandH*0.18))}
+  const overlayText=scene.narration||scene.dialogue||scene.visual_description||'';
+  if(overlayText){ctx.fillStyle='#f5f0e1';ctx.font='500 '+textSize+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='top';let txt=overlayText;const maxW=bandW-Math.round(bandH*0.4);while(ctx.measureText(txt).width>maxW&&txt.length>4)txt=txt.slice(0,-4)+'…';ctx.fillText(txt,bandX+Math.round(bandH*0.22),bandY+Math.round(bandH*0.5))}
+  ctx.fillStyle='rgba(245,240,225,0.55)';ctx.font='400 '+Math.round(nameSize*0.85)+'px -apple-system,BlinkMacSystemFont,Helvetica,Arial';ctx.textBaseline='bottom';ctx.fillText('Reconstitution manga · stop-motion · généré par IA',bandX+Math.round(bandH*0.22),bandY+bandH-Math.round(bandH*0.12));
+  ctx.restore();
+}
+
+function stopFilmPlayback(){state.isPlayingFilm=false;if(state.playRAF)cancelAnimationFrame(state.playRAF);state.playRAF=null;stopTTS();const overlay=document.getElementById('player-overlay');if(overlay)overlay.classList.remove('visible');updateButtons()}
+
+async function runPipeline(){
+  if(state.isRunning)return;
+  if(!hasActiveKey()){showToast('Ajoutez au moins une clé API','error');return}
+  if(!state.selectedNews){showToast('Sélectionnez une actualité','error');return}
+  if(state.selectedCharacters.size===0){showToast('Sélectionnez au moins un personnage','error');return}
+  state.isRunning=true;state.stopRequested=false;state.script=null;state.videos=[];state.episodeId='episode-'+Date.now();
+  document.getElementById('stop-btn').classList.add('visible');
+  document.getElementById('launch-btn').disabled=true;
+  document.getElementById('section-script').classList.add('hidden');
+  document.getElementById('section-videos').classList.add('hidden');
+  document.getElementById('section-player').classList.add('hidden');
+  document.getElementById('videos-grid').innerHTML='';
+  journalLog('▶ Démarrage de la génération.','highlight');
+  journalLog('Sujet : « '+state.selectedNews.title.slice(0,80)+' »','info');
+  journalLog('Personnages : '+Array.from(state.selectedCharacters).map(id=>CHARACTER_BIBLE[id].name).join(', '),'info');
+  journalLog('Lieu : '+(state.selectedLocation?LOCATION_BIBLE[state.selectedLocation].name:'(libre)'),'info');
+  journalLog('Mode : stop-motion · '+state.stopMotionFrames+' images/scène · '+state.stopMotionFps+' fps','info');
+  try{
+    setStatus('Étape 1/2 — Scénario…');
+    const script=await generateScript();
+    if(!script)throw new Error('Scénario invalide');
+    state.script=script;renderScript();revealSection('section-script');
+    journalLog('Scénario prêt : '+script.scenes.length+' scènes.','success');
+    await sleep(600);
+    if(state.stopRequested)throw new Error('Arrêt demandé');
+    setStatus('Étape 2/2 — Génération des scènes stop-motion…');
+    await generateAllScenes();
+    if(state.stopRequested)throw new Error('Arrêt demandé');
+    setStatus('✦ Séquence prête ✦');
+    await sleep(1500);setStatus(null);
+    showToast('Séquence stop-motion générée','success');
+  }catch(e){
+    if(e.message==='Arrêt demandé'){journalLog('Arrêt demandé.','warn');setStatus('Arrêté.');await sleep(1200);setStatus(null)}
+    else{journalLog('Erreur : '+e.message,'error');debugLog('error','PIPELINE',e.message);setStatus('Erreur — voir console.');await sleep(2400);setStatus(null)}
+  }
+  state.isRunning=false;state.stopRequested=false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  updateButtons();
+}
+
+function loadDemoMode(){if(hasActiveKey())return;journalLog('MODE DÉMONSTRATION LOCAL — aucune clé API configurée.','warn');journalLog('Les vidéos de test ne sont PAS des générations IA ni des documents réels.','warn');state.videos=[{status:'error',frames:null,progress:'Mode démo — pas de scène de test',type:'demo'}];renderVideos()}
+
+async function handleReferenceFile(file){
+  if(!file)return;
+  if(!file.type.startsWith('image/')){showToast('Fichier non-image','error');return}
+  try{
+    const raw=await fileToDataUri(file);
+    const compressed=await compressImage(raw,1280);
+    state.referenceImage=compressed;state.referenceAnalysis=null;
+    const drop=document.getElementById('ref-drop');
+    if(drop){drop.classList.add('has-image');drop.innerHTML='<div class="ref-preview"><img src="'+compressed+'" alt="Référence"><div class="ref-label">Référence · '+esc(file.name)+'</div><button type="button" class="ref-remove" id="ref-remove-btn">✕</button></div>';const btn=document.getElementById('ref-remove-btn');if(btn)btn.addEventListener('click',(e)=>{e.stopPropagation();state.referenceImage=null;state.referenceAnalysis=null;renderReferenceDrop();const block=document.getElementById('reference-analysis-block');if(block)block.classList.add('hidden')})}
+    const badge=document.getElementById('ref-badge');if(badge)badge.textContent='1';
+    await analyzeReferenceImage(compressed);
+  }catch(e){debugLog('error','UPLOAD',e.message);showToast('Erreur lecture image','error')}
+}
+
+function renderReferenceDrop(){
+  const drop=document.getElementById('ref-drop');if(!drop)return;
+  drop.classList.remove('has-image');
+  drop.innerHTML='<input type="file" accept="image/*" id="ref-file-input"><div class="ref-icon">📷</div><div class="ref-text"><strong>Ajoutez une image de référence</strong><br>Capture d\'écran, photo de presse autorisée, image de lieu public…</div><div class="ref-hint">L\'IA analysera uniquement les éléments observables (architecture, foule, lumière).</div>';
+  bindRefDrop();
+  const badge=document.getElementById('ref-badge');if(badge)badge.textContent='0';
+}
+
+function bindRefDrop(){const input=document.getElementById('ref-file-input');if(!input)return;input.addEventListener('change',(e)=>{const file=e.target.files&&e.target.files[0];if(file)handleReferenceFile(file)})}
+
+// ========== INIT ==========
+(function init(){
+  const saveBtn=document.getElementById('api-save-btn');if(saveBtn)saveBtn.addEventListener('click',saveKeysFromUI);
+  const apiInput=document.getElementById('api-keys-input');
+  if(apiInput)apiInput.addEventListener('keydown',(e)=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();saveKeysFromUI()}});
+  document.querySelectorAll('[data-toggle]').forEach(header=>{header.addEventListener('click',()=>{const el=document.getElementById(header.dataset.toggle);if(el)el.classList.toggle('open')})});
+  const loadNewsBtn=document.getElementById('load-news-btn');if(loadNewsBtn)loadNewsBtn.addEventListener('click',loadNews);
+  bindRefDrop();
+  const sceneCountSel=document.getElementById('scene-count-select');if(sceneCountSel)sceneCountSel.addEventListener('change',e=>{state.sceneCount=parseInt(e.target.value,10)});
+  const framesSel=document.getElementById('stopmotion-frames-select');if(framesSel)framesSel.addEventListener('change',e=>{state.stopMotionFrames=parseInt(e.target.value,10);debugLog('info','CONFIG','Images par scène : '+state.stopMotionFrames)});
+  const fpsSel=document.getElementById('stopmotion-fps-select');if(fpsSel)fpsSel.addEventListener('change',e=>{state.stopMotionFps=parseInt(e.target.value,10);debugLog('info','CONFIG','FPS : '+state.stopMotionFps)});
+  const formatSel=document.getElementById('format-select');if(formatSel)formatSel.addEventListener('change',e=>{state.format=e.target.value});
+  const intensitySel=document.getElementById('intensity-select');if(intensitySel)intensitySel.addEventListener('change',e=>{state.intensity=e.target.value});
+  const launchBtn=document.getElementById('launch-btn');if(launchBtn)launchBtn.addEventListener('click',runPipeline);
+  const stopBtn=document.getElementById('stop-btn');if(stopBtn)stopBtn.addEventListener('click',()=>{state.stopRequested=true;stopTTS();debugLog('warn','STOP','Arrêt demandé');journalLog('Arrêt demandé — je termine proprement…','warn');setStatus('Arrêt en cours…')});
+  const playBtn=document.getElementById('play-film-btn');if(playBtn)playBtn.addEventListener('click',playFilm);
+  const replayBtn=document.getElementById('replay-btn');if(replayBtn)replayBtn.addEventListener('click',playFilm);
+  const overlay=document.getElementById('player-overlay');if(overlay)overlay.addEventListener('click',stopFilmPlayback);
+  document.addEventListener('keydown',(e)=>{if(e.key==='Escape'&&state.isPlayingFilm)stopFilmPlayback()});
+  const voiceToggle=document.getElementById('voice-toggle');if(voiceToggle)voiceToggle.addEventListener('change',e=>{state.voiceEnabled=e.target.checked;if(!state.voiceEnabled)stopTTS();debugLog('info','VOIX','Narration : '+(state.voiceEnabled?'activée':'désactivée'))});
+  const tabJournal=document.getElementById('tab-journal');if(tabJournal)tabJournal.addEventListener('click',()=>switchTab('journal'));
+  const tabTech=document.getElementById('tab-tech');if(tabTech)tabTech.addEventListener('click',()=>switchTab('tech'));
+  const clearBtn=document.getElementById('debug-clear-btn');if(clearBtn)clearBtn.addEventListener('click',e=>{e.stopPropagation();clearDebug()});
+  const copyBtn=document.getElementById('debug-copy-btn');if(copyBtn)copyBtn.addEventListener('click',e=>{e.stopPropagation();copyDebug()});
+  const collapseBtn=document.getElementById('debug-collapse-btn');if(collapseBtn)collapseBtn.addEventListener('click',e=>{e.stopPropagation();toggleDebugCollapse()});
+  refreshKeyPool();
+  const storedKeys=getStoredKeys();if(storedKeys.length>0&&apiInput)apiInput.value=storedKeys.join('\n');
+  updateApiPanel();updateButtons();renderNewsList();renderCharactersGrid();renderLocationsGrid();renderPalettesGrid();renderVideos();renderScript();initTTS();
+  setInterval(renderKeysStatus,1000);
+  debugLog('success','INIT','Cinéma Studio — Actualité Manga v2 (stop-motion)');
+  debugLog('info','INIT','Mode : stop-motion ('+state.stopMotionFrames+' images/scène · '+state.stopMotionFps+' fps)');
+  debugLog('info','INIT','Pipeline : RSS → Fact-check → Références → Scénario → Images → Stop-motion → Player');
+  debugLog('info','INIT','Modèles : '+MODEL_TEXT+' / '+MODEL_IMAGE);
+  debugLog('info','INIT','Parser JSON renforcé · Multi-clés API · Anti-clonage');
+  journalLog('Bienvenue dans Cinéma Studio — Actualité Manga (mode stop-motion).','highlight');
+  journalLog('Chaque scène est générée en '+state.stopMotionFrames+' images clés animées à '+state.stopMotionFps+' fps.','info');
+  journalLog('Les scènes produites sont des reconstitutions manga fictives inspirées de faits réels et générées par IA.','info');
+  if(!hasActiveKey())setTimeout(()=>loadDemoMode(),500);
+})();
+</script>
+</body>
+</html>
